@@ -1,4 +1,4 @@
-if getgenv().VynixuEntitySpawnerV2 then return getgenv().VynixuEntitySpawnerV2 end
+if getgenv().DaxfgrEntitySpawner then return getgenv().DaxfgrEntitySpawner end
 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/Daxfgr/Doors-Entity-Spawner/refs/heads/main/Spawner/Functions.lua"))()
 
