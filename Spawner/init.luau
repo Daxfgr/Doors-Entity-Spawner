@@ -65,7 +65,7 @@ local CONST = {
 	DEFAULT = {
 		CONFIG = {
 			Entity = {
-				Name = "Template Entity",
+				Name = "Rush",
 				Asset = "https://github.com/RegularVynixu/Utilities/raw/refs/heads/main/Doors/Entity%20Spawner/Assets/Entities/Rush.rbxm",
 				HeightOffset = 0
 			},
