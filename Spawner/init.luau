@@ -65,55 +65,55 @@ local CONST = {
 	DEFAULT = {
 		CONFIG = {
 			Entity = {
-				Name = "Rush",
-				Asset = "https://github.com/Daxfgr/Doors-Entity-Spawner/raw/refs/heads/main/Spawner/Assets/Entities/Rush.rbxm",
-				HeightOffset = 0
+				Name = "Example",
+				Asset = "URL",
+				HeightOffset = --Number
 			},
 			Movement = {
-				Speed = 100,
-				Delay = 2,
-				Reversed = false
+				Speed = --Number,
+				Delay = --Number,
+				Reversed = --Select -- "true" -- "false"
 			},
 			Damage = {
-				Enabled = true,
-				Range = 40,
-				Amount = 125,
-                IgnoreHiding = false
+				Enabled = --Select, -- "true" -- "false"
+				Range = --Number,
+				Amount = --Number,
+                IgnoreHiding = --Select -- "true" -- "false
 			},
 			Rebounding = {
-				Enabled = true,
-				Type = "Ambush", -- "Blitz"
-				Min = 2,
-				Max = 4,
-				Delay = 2
+				Enabled = --Select, -- "true" -- "false"
+				Type = "--Select", -- "Ambush" -- "Blitz"
+				Min = --Number,
+				Max = --Number,
+				Delay = --Number
 			},
 			Lights = {
 				Flicker = {
-					Enabled = true,
-					Duration = 1
+					Enabled = --Select, -- "true" -- "false"
+					Duration = --Number
 				},
-				Shatter = true,
-				Repair = false
+				Shatter = --Select, -- "true" -- "false"
+				Repair = --Select -- "true" -- "false"
 			},
 			Earthquake = {
-				Enabled = true
+				Enabled = --Select -- "true" -- "false"
 			},
 			CameraShake = {
-				Enabled = true,
-				Values = {1.5, 20, 0.1, 1}, -- Magnitude, Roughness, FadeIn, FadeOut
-				Range = 100
+				Enabled = --Select, -- "true" -- "false"
+				Values = {--Number, --Number, --Number, --Number}, -- Magnitude, Roughness, FadeIn, FadeOut
+				Range = --Number
 			},
 			Crucifixion = {
-				Type = "Guiding", -- "Curious"
-				Enabled = true,
-				Range = 40,
-				Resist = false,
-				Break = true
+				Type = "--Select", -- "Guiding -- "Curious"
+				Enabled = --Select, -- "true" -- "false"
+				Range = --Number,
+				Resist = --Select, -- "true" -- "false"
+				Break = --Select -- "true" -- "false"
 			},
 			Death = {
-				Type = "Guiding", -- "Curious"
-				Hints = {"Death", "Hints", "Go", "Here"},
-				Cause = ""
+				Type = "--Select", -- "Guiding" -- "Curious"
+				Hints = {"Example", "Example", "Example", "Example"},
+				Cause = "Example"
 			}
 		},
 		DEBUG = {
