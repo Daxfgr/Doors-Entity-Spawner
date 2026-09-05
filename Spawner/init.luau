@@ -66,8 +66,7 @@ local CONST = {
 		CONFIG = {
 			Entity = {
 				Name = "Rush",
-				Asset = "https://github.com/Daxfgr/Doors-Entity-Spawner/raw/refs/heads/main/Spawner/Assets/Entities/Rush.rbxm
-",
+				Asset = "https://github.com/Daxfgr/Doors-Entity-Spawner/raw/refs/heads/main/Spawner/Assets/Entities/Rush.rbxm",
 				HeightOffset = 0
 			},
 			Movement = {
