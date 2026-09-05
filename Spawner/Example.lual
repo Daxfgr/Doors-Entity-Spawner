@@ -8,53 +8,53 @@ local entity = Spawner:Create({
 	Entity = {
 		Name = "Template Entity",
 		Asset = "URL",
-		HeightOffset = 0
+		HeightOffset = --Number
 	},
 	Lights = {
 		Flicker = {
-			Enabled = true,
-			Duration = 1
+			Enabled = --Select, -- "true" -- "false"
+			Duration = --Number
 		},
-		Shatter = true,
-		Repair = false
+		Shatter = --Select, -- "true" -- "false"
+		Repair = --Select -- "true" -- "false
 	},
 	Earthquake = {
-		Enabled = true
+		Enabled = --Select -- "true" -- "false"
 	},
 	CameraShake = {
-		Enabled = true,
-		Range = 100,
-		Values = {1.5, 20, 0.1, 1} -- Magnitude, Roughness, FadeIn, FadeOut
+		Enabled = --Select, -- "true" -- "false"
+		Range = -Number,
+		Values = {--Number, --Number, --Number, --Number} -- Magnitude, Roughness, FadeIn, FadeOut
 	},
 	Movement = {
-		Speed = 100,
-		Delay = 2,
-		Reversed = false
+		Speed = --Number,
+		Delay = --Number,
+		Reversed = --Select -- "true" -- "false"
 	},
 	Rebounding = {
-		Enabled = true,
-		Type = "Ambush", -- "Blitz"
-		Min = 1,
-		Max = 1,
-		Delay = 2
+		Enabled = --Select, -- "true" -- "false"
+		Type = "--Select", -- "Ambush" -- "Blitz"
+		Min = --Number,
+		Max = --Number,
+		Delay = --Number,
 	},
 	Damage = {
-		Enabled = true,
-		IgnoreHiding = false,
-		Range = 40,
-		Amount = 125
+		Enabled = --Select, -- "true" -- "false"
+		IgnoreHiding = --Select, -- "true" -- "false"
+		Range = --Number,
+		Amount = --Number
 	},
 	Crucifixion = {
         Type = "Guiding",
-		Enabled = true,
-		Range = 40,
-		Resist = false,
-		Break = true
+		Enabled = --Select, -- "true" -- "false"
+		Range = --Number,
+		Resist = --Select, -- "true" -- "false'
+		Break = --Select -- "true" -- "false"
 	},
 	Death = {
-		Type = "Guiding", -- "Curious"
-		Hints = {"Death", "Hints", "Go", "Here"},
-		Cause = ""
+		Type = "--Select", -- "Guiding" -- "Curious"
+		Hints = {"Example", "Example", "Example", "Example"},
+		Cause = "Example"
 	}
 })
 
