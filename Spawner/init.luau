@@ -1,6 +1,6 @@
 if getgenv().VynixuEntitySpawnerV2 then return getgenv().VynixuEntitySpawnerV2 end
 
-loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Functions.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Daxfgr/Doors-Entity-Spawner/refs/heads/main/Spawner/Functions.lua"))()
 
 -- \\ Services // --
 
