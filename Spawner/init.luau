@@ -12,7 +12,7 @@ local TweenService = game:GetService("TweenService")
 
 -- \\ Variables // --
 
-local ROOT = "https://github.com/RegularVynixu/DOORS-Entity-Spawner-V2/raw/main"
+local ROOT = "https://github.com/Daxfgr/Doors-Entity-Spawner/tree/main/Spawner"
 
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
