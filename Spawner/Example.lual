@@ -6,7 +6,7 @@ local Spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/Daxfg
 
 local entity = Spawner:Create({
 	Entity = {
-		Name = "Template Entity",
+		Name = "Example",
 		Asset = "URL",
 		HeightOffset = --Number
 	},
