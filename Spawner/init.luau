@@ -104,7 +104,7 @@ local CONST = {
 				Range = --Number
 			},
 			Crucifixion = {
-				Type = "--Select", -- "Guiding -- "Curious"
+				Type = "--Select", -- "Guiding"
 				Enabled = --Select, -- "true" -- "false"
 				Range = --Number,
 				Resist = --Select, -- "true" -- "false"
