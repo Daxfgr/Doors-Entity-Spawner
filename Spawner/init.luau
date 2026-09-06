@@ -12,7 +12,7 @@ local TweenService = game:GetService("TweenService")
 
 -- \\ Variables // --
 
-local ROOT = "https://github.com/Daxfgr/Doors-Entity-Spawner/tree/main/Spawner/raw/main
+local ROOT = "https://github.com/Daxfgr/Doors-Entity-Spawner/main/Spawner/raw/main/"
 "
 
 local LocalPlayer = Players.LocalPlayer
