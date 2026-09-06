@@ -554,7 +554,7 @@ local function DamagePlayer(entity: any)
 	if Humanoid.Health <= 0 or IsPlayerProtected() then return end
 		
     local config = entity.Config
-    local newHealth = math.clamp(Humanoid.Health - config.Damage.Amount, 0, Humanoid.MaxHealth)
+    local newHealth = math.clamp(Humanoid.Health - config.Jumpscare.Damage.Amount, 0, Humanoid.MaxHealth)
 
     -- Update health
     Humanoid.Health = newHealth
@@ -1020,9 +1020,10 @@ Module.Run = function(self, entity: any, copyEntity: boolean)
                 not model:GetAttribute("Paused")
                 and not usedCrucifix
             then
-                local damage = config.Damage
+                local jumpscare = config.Jumpscare
+                local damage = jumpscare.Damage
                 if
-                    damage.Enabled
+                    jumpscare.Enabled
                     and damage.Range > 0
                     and Humanoid.Health > 0
                     and (not Character:GetAttribute("Hiding") or damage.IgnoreHiding)
@@ -1032,7 +1033,7 @@ Module.Run = function(self, entity: any, copyEntity: boolean)
                     and inSight
                 then
                     model:SetAttribute("Damage", false)
-                    DamagePlayer(entity)
+                    jumpscare.Action(entity)
                 end
             end
 
