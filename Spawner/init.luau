@@ -82,8 +82,9 @@ local CONST = {
 					IgnoreHiding = false
 				},
 
-				Action = function(entity)
-				end
+				Action = function(entity, DamagePlayer)
+
+                end
 			},
 			Rebounding = {
 				Enabled = false, -- "true" -- "false"
