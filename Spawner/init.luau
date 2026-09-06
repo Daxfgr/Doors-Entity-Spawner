@@ -1039,7 +1039,7 @@ Module.Run = function(self, entity: any, copyEntity: boolean)
                     and inSight
                 then
                     model:SetAttribute("Damage", false)
-                    jumpscare.Action(entity)
+                    jumpscare.Action(entity, DamagePlayer)
                 end
             end
 
