@@ -275,11 +275,13 @@ local function FixRoomLights(room: Model)
 end
 
 local function HasEquipped(name: string): boolean
-	local tool = Character:FindFirstChildOfClass("Tool")
-	if tool and (tool.Name == name or tool:HasTag(name)) then
-		return true, tool
+	for _, tool in ipairs(Character:GetChildren()) do
+		if tool:IsA("Tool") and (tool.Name == name or tool:HasTag(name)) then
+			return true, tool
+		end
 	end
-	return false
+
+	return false, nil
 end
 
 local function CrucifixEntity(entity: any)
