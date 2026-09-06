@@ -66,51 +66,51 @@ local CONST = {
 			Entity = {
 				Name = "Example",
 				Asset = "URL",
-				HeightOffset = --Number
+				HeightOffset = 0
 			},
 			Movement = {
-				Speed = --Number,
-				Delay = --Number,
-				Reversed = --Select -- "true" -- "false"
+				Speed = 0,
+				Delay = 0,
+				Reversed = false -- "true" -- "false"
 			},
 			Damage = {
-				Enabled = --Select, -- "true" -- "false"
-				Range = --Number,
-				Amount = --Number,
-                IgnoreHiding = --Select -- "true" -- "false
+				Enabled = true, -- "true" -- "false"
+				Range = 0,
+				Amount = 0,
+                IgnoreHiding = false -- "true" -- "false
 			},
 			Rebounding = {
-				Enabled = --Select, -- "true" -- "false"
-				Type = "--Select", -- "Ambush" -- "Blitz"
-				Min = --Number,
-				Max = --Number,
-				Delay = --Number
+				Enabled = false, -- "true" -- "false"
+				Type = "Ambush", -- "Ambush" -- "Blitz"
+				Min = 0,
+				Max = 0,
+				Delay = 0
 			},
 			Lights = {
 				Flicker = {
-					Enabled = --Select, -- "true" -- "false"
-					Duration = --Number
+					Enabled = false, -- "true" -- "false"
+					Duration = 0
 				},
-				Shatter = --Select, -- "true" -- "false"
-				Repair = --Select -- "true" -- "false"
+				Shatter = false, -- "true" -- "false"
+				Repair = false -- "true" -- "false"
 			},
 			Earthquake = {
-				Enabled = --Select -- "true" -- "false"
+				Enabled = false -- "true" -- "false"
 			},
 			CameraShake = {
-				Enabled = --Select, -- "true" -- "false"
-				Values = {--Number, --Number, --Number, --Number}, -- Magnitude, Roughness, FadeIn, FadeOut
-				Range = --Number
+				Enabled = false, -- "true" -- "false"
+				Values = {0, 0, 0, 0}, -- Magnitude, Roughness, FadeIn, FadeOut
+				Range = 0
 			},
 			Crucifixion = {
-				Type = "--Select", -- "Guiding"
-				Enabled = --Select, -- "true" -- "false"
-				Range = --Number,
-				Resist = --Select, -- "true" -- "false"
-				Break = --Select -- "true" -- "false"
+				Type = "Guiding", -- "Guiding"
+				Enabled = true, -- "true" -- "false"
+				Range = 0,
+				Resist = false, -- "true" -- "false"
+				Break = true -- "true" -- "false"
 			},
 			Death = {
-				Type = "--Select", -- "Guiding" -- "Curious"
+				Type = "Guiding", -- "Guiding" -- "Curious"
 				Hints = {"Example", "Example", "Example", "Example"},
 				Cause = "Example"
 			}
