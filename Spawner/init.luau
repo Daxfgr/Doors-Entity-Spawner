@@ -1032,7 +1032,7 @@ Module.Run = function(self, entity: any, copyEntity: boolean)
                     jumpscare.Enabled
                     and damage.Range > 0
                     and Humanoid.Health > 0
-                    and (not Character:GetAttribute("Hiding") or damage.IgnoreHiding)
+                    and (not Character:GetAttribute("Hiding") or damage.IgnoreHiding == 1)
                     and model:GetAttribute("Damage")
                     and not model:GetAttribute("BeingBanished")
                     and (charOrigin - origin).Magnitude <= damage.Range
