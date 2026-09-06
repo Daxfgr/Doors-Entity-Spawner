@@ -945,7 +945,7 @@ Module.Run = function(self, entity: any, copyEntity: boolean)
             
             -- In Sight detection
             local inSight = false
-            if (charOrigin - origin).Magnitude <= config.Damage.Range then
+            if (charOrigin - origin).Magnitude <= config.Jumpscare.Damage.Range then
                 local params = RaycastParams.new()
                 params.FilterType = Enum.RaycastFilterType.Exclude
                 params.FilterDescendantsInstances = {Character, model, CollectionService:GetTagged("HidingSpot")}
