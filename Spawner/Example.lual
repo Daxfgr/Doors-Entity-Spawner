@@ -23,7 +23,7 @@ local entity = Spawner:Create({
 	},
 	CameraShake = {
 		Enabled = --Select, -- "true" -- "false"
-		Range = -Number,
+		Range = --Number,
 		Values = {--Number, --Number, --Number, --Number} -- Magnitude, Roughness, FadeIn, FadeOut
 	},
 	Movement = {
@@ -42,9 +42,9 @@ local entity = Spawner:Create({
 		Enabled = true,
 
 		Damage = {
-			Range = 50,
-			Amount = 100,
-			IgnoreHiding = false
+			Range = --Number,
+			Amount = --Number,
+			IgnoreHiding = --Select -- "true" -- "false"
 		},
 
 		Action = function(entity, DamagePlayer)
