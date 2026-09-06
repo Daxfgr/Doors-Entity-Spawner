@@ -73,11 +73,17 @@ local CONST = {
 				Delay = 0,
 				Reversed = false -- "true" -- "false"
 			},
-			Damage = {
-				Enabled = true, -- "true" -- "false"
-				Range = 0,
-				Amount = 0,
-                IgnoreHiding = false -- "true" -- "false
+			Jumpscare = {
+				Enabled = false,
+
+				Damage = {
+					Range = 0,
+					Amount = 0,
+					IgnoreHiding = false
+				},
+
+				Action = function(entity)
+				end
 			},
 			Rebounding = {
 				Enabled = false, -- "true" -- "false"
