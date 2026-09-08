@@ -43,7 +43,7 @@ local entity = Spawner:Create({
 
 		Damage = {
 			Range = 54,
-			Amount = 145,
+			Amount = 125,
 			IgnoreHiding = false -- "true" -- "false"
 		},
 
