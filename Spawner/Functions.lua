@@ -61,9 +61,39 @@ end
 
 Module.LoadCustomInstance = function(url: string): Instance?
     local success, result = pcall(function()
-        return game:GetObjects(Module.LoadCustomAsset(url))[1]
+        if isfile(url) then
+            local asset = getcustomasset(url, true)
+            local objects = game:GetObjects(asset)
+
+            assert(objects[1], "Local file did not return an Instance.")
+
+            return objects[1]
+        end
+
+        if url:lower():sub(1, 4) == "http" then
+            local asset = Module.LoadCustomAsset(url)
+            local objects = game:GetObjects(asset)
+
+            assert(objects[1], "URL did not return an Instance.")
+
+            return objects[1]
+        end
+
+        local asset = Module.LoadCustomAsset(url)
+        local objects = game:GetObjects(asset)
+
+        assert(objects[1], "Asset did not return an Instance.")
+
+        return objects[1]
     end)
-    return success and result or nil
+
+    if not success then
+        warn("LoadCustomInstance failed:")
+        warn(result)
+        return nil
+    end
+
+    return result
 end
 
 Module.GetGameLastUpdate = function(): DateTime
