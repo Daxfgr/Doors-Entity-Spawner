@@ -69,33 +69,6 @@ local entity = Spawner:Create({
 	}
 })
 
----====== Preserve entity audio ======---
-
-local originalAudio = {}
-
-for _, v in ipairs(entity.Model:GetDescendants()) do
-	if v:IsA("Sound") then
-		originalAudio[v] = {
-			Volume = v.Volume,
-			RollOffMaxDistance = v.RollOffMaxDistance,
-			EmitterSize = v.EmitterSize
-		}
-	end
-end
-
-task.spawn(function()
-	while entity:IsAlive() do
-		for sound, values in pairs(originalAudio) do
-			if sound and sound.Parent then
-				sound.Volume = values.Volume
-				sound.RollOffMaxDistance = values.RollOffMaxDistance
-				sound.EmitterSize = values.EmitterSize
-			end
-		end
-		task.wait()
-	end
-end)
-
 ---====== Debug entity ======---
 
 entity:SetCallback("OnSpawned", function()
