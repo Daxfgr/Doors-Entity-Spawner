@@ -7,7 +7,7 @@ local Spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/Daxfg
 local entity = Spawner:Create({
 	Entity = {
 		Name = "Ripper",
-        Asset = "Assets/Ripper.rbxm"
+        Asset = getcustomasset("Assets/Ripper.rbxm", true),
 		HeightOffset = 2
 	},
 	Lights = {
