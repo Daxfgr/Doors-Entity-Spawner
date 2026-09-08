@@ -36,6 +36,10 @@ Module.Require = function(s: string): any?
 end
 
 Module.LoadCustomAsset = function(url: string): string?
+    if url:lower():sub(1, 11) == "rbxasset://" then
+        return url
+    end
+
     if getcustomasset then
         if url:lower():sub(1, 4) == "http" then
             local fileName = `temp_{tick()}.txt`
@@ -53,9 +57,11 @@ Module.LoadCustomAsset = function(url: string): string?
     else
         warn("Executor doesn't support 'getcustomasset', rbxassetid only.")
     end
+
     if url:find("rbxassetid") or tonumber(url) then
-        return "rbxassetid://"..url:match("%d+")
+        return "rbxasset://"..url:match("%d+")
     end
+
     error(debug.traceback("Failed to load custom asset for:\n"..url))
 end
 
