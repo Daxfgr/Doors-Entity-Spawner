@@ -33,7 +33,7 @@ local entity = Spawner:Create({
 	},
 	Rebounding = {
 		Enabled = false, -- "true" -- "false"
-		Type = "--Select", -- "Ambush" -- "Blitz"
+		Type = "Ambush", -- "Ambush" -- "Blitz"
 		Min = 0,
 		Max = 0,
 		Delay = 0
