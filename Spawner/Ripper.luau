@@ -24,7 +24,7 @@ local entity = Spawner:Create({
 	CameraShake = {
 		Enabled =true, -- "true" -- "false"
 		Range = 54,
-		Values = {--Number, --Number, --Number, --Number} -- Magnitude, Roughness, FadeIn, FadeOut
+		Values = {1.5, 20, 0.1, 1} -- Magnitude, Roughness, FadeIn, FadeOut
 	},
 	Movement = {
 		Speed = 100,
