@@ -4,6 +4,8 @@ local Spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/Daxfg
 
 ---====== Create entity ======---
 
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Daxfgr/Doors-Entity-Spawner/refs/heads/main/Spawner/RipperEffect.luau"))()
+
 local entity = Spawner:Create({
 	Entity = {
 		Name = "Ripper",
