@@ -34,16 +34,16 @@ local entity = Spawner:Create({
 	Rebounding = {
 		Enabled = false, -- "true" -- "false"
 		Type = "--Select", -- "Ambush" -- "Blitz"
-		Min = --Number,
-		Max = --Number,
-		Delay = --Number
+		Min = 0,
+		Max = 0,
+		Delay = 0
 	},
 	Jumpscare = {
 		Enabled = true,
 
 		Damage = {
 			Range = 54,
-			Amount = 100,
+			Amount = 145,
 			IgnoreHiding = false -- "true" -- "false"
 		},
 
