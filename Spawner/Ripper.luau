@@ -12,7 +12,7 @@ local entity = Spawner:Create({
 	Entity = {
 		Name = "RipperMoving",
         Asset = getcustomasset("Assets/Ripper.rbxm", true),
-		HeightOffset = 1
+		HeightOffset = 2
 	},
 	Lights = {
 		Flicker = {
@@ -32,7 +32,7 @@ local entity = Spawner:Create({
 	},
 	Movement = {
 		Speed = 100,
-		Delay = 8,
+		Delay = 4,
 		Reversed = false -- "true" -- "false"
 	},
 	Rebounding = {
