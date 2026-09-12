@@ -105,7 +105,6 @@ while os.clock() - Start < FadeIn + FadeOut do
 	end
 
 	local Progress = GetProgress()
-	local Time = os.clock() - Start
 
 	for Object, Data in pairs(Objects) do
 
@@ -118,21 +117,10 @@ while os.clock() - Start < FadeIn + FadeOut do
 
 			local Target = Data.Neon and NeonRed or Red
 
-			if Time <= FadeIn then
-				Object.Color = Data.Color:Lerp(Target, Progress)
-			else
-				local TargetH, TargetS, TargetV = Target:ToHSV()
-				local OriginalH, OriginalS, OriginalV = Data.Color:ToHSV()
-
-				if Progress > 0 then
-					local S = TargetS + (OriginalS - TargetS) * (1 - Progress)
-					local V = TargetV + (OriginalV - TargetV) * (1 - Progress)
-
-					Object.Color = Color3.fromHSV(TargetH, S, V)
-				else
-					Object.Color = Data.Color
-				end
-			end
+			Object.Color = Data.Color:Lerp(
+				Target,
+				Progress
+			)
 
 		elseif Data.Type == "Sequence" then
 
@@ -140,23 +128,15 @@ while os.clock() - Start < FadeIn + FadeOut do
 
 			for _, Point in ipairs(Data.Color.Keypoints) do
 
-				local NewColor
-
-				if Time <= FadeIn then
-					NewColor = Point.Value:Lerp(Red, Progress)
-				else
-					local TargetH, TargetS, TargetV = Red:ToHSV()
-					local OriginalH, OriginalS, OriginalV = Point.Value:ToHSV()
-
-					local S = TargetS + (OriginalS - TargetS) * (1 - Progress)
-					local V = TargetV + (OriginalV - TargetV) * (1 - Progress)
-
-					NewColor = Color3.fromHSV(TargetH, S, V)
-				end
-
 				table.insert(
 					Keypoints,
-					ColorSequenceKeypoint.new(Point.Time, NewColor)
+					ColorSequenceKeypoint.new(
+						Point.Time,
+						Point.Value:Lerp(
+							Red,
+							Progress
+						)
+					)
 				)
 			end
 
@@ -164,27 +144,15 @@ while os.clock() - Start < FadeIn + FadeOut do
 
 		elseif Data.Type == "Highlight" then
 
-			if Time <= FadeIn then
-				Object.FillColor = Data.FillColor:Lerp(Red, Progress)
-				Object.OutlineColor = Data.OutlineColor:Lerp(Red, Progress)
-			else
-				local TargetH, TargetS, TargetV = Red:ToHSV()
+			Object.FillColor = Data.FillColor:Lerp(
+				Red,
+				Progress
+			)
 
-				local FillH, FillS, FillV = Data.FillColor:ToHSV()
-				local OutlineH, OutlineS, OutlineV = Data.OutlineColor:ToHSV()
-
-				Object.FillColor = Color3.fromHSV(
-					TargetH,
-					TargetS + (FillS - TargetS) * (1 - Progress),
-					TargetV + (FillV - TargetV) * (1 - Progress)
-				)
-
-				Object.OutlineColor = Color3.fromHSV(
-					TargetH,
-					TargetS + (OutlineS - TargetS) * (1 - Progress),
-					TargetV + (OutlineV - TargetV) * (1 - Progress)
-				)
-			end
+			Object.OutlineColor = Data.OutlineColor:Lerp(
+				Red,
+				Progress
+			)
 		end
 	end
 
