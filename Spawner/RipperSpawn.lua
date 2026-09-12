@@ -7,7 +7,6 @@ sound.PlayOnRemove = false
 sound.PlaybackSpeed = 0.6
 sound.PlaybackRegionsEnabled = false
 sound.SoundId = "rbxassetid://9125713501"
-sound.TimePosition = 5.596
 sound.Volume = 6
 sound.RollOffMaxDistance = 50
 sound.RollOffMinDistance = 1
