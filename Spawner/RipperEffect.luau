@@ -28,6 +28,16 @@ local function GetProgress()
 	)
 end
 
+local function LerpHue(a, b, t)
+	local diff = b - a
+	if diff > 0.5 then
+		diff -= 1
+	elseif diff < -0.5 then
+		diff += 1
+	end
+	return (a + diff * t) % 1
+end
+
 local function AddObject(Object)
 	if Objects[Object] then
 		return
@@ -134,11 +144,12 @@ while true do
 
 				local Fade = 1 - Progress
 
+				local H = LerpHue(TargetH, OriginalH, Fade)
 				local S = TargetS + (OriginalS - TargetS) * Fade
 				local V = TargetV + (OriginalV - TargetV) * Fade
 
 				Object.Color = Color3.fromHSV(
-					TargetH,
+					H,
 					S,
 					V
 				)
@@ -166,11 +177,12 @@ while true do
 
 					local Fade = 1 - Progress
 
+					local H = LerpHue(TargetH, OriginalH, Fade)
 					local S = TargetS + (OriginalS - TargetS) * Fade
 					local V = TargetV + (OriginalV - TargetV) * Fade
 
 					NewColor = Color3.fromHSV(
-						TargetH,
+						H,
 						S,
 						V
 					)
@@ -210,14 +222,17 @@ while true do
 
 				local Fade = 1 - Progress
 
+				local FillHOut = LerpHue(TargetH, FillH, Fade)
+				local OutlineHOut = LerpHue(TargetH, OutlineH, Fade)
+
 				Object.FillColor = Color3.fromHSV(
-					TargetH,
+					FillHOut,
 					TargetS + (FillS - TargetS) * Fade,
 					TargetV + (FillV - TargetV) * Fade
 				)
 
 				Object.OutlineColor = Color3.fromHSV(
-					TargetH,
+					OutlineHOut,
 					TargetS + (OutlineS - TargetS) * Fade,
 					TargetV + (OutlineV - TargetV) * Fade
 				)
