@@ -3,8 +3,8 @@ local RunService = game:GetService("RunService")
 local FadeIn = 2
 local FadeOut = 60
 
-local Red = Color3.fromRGB(255, 0, 0)
-local NeonRed = Color3.fromRGB(255, 80, 80)
+local Red = Color3.fromRGB(0, 0, 255)
+local NeonRed = Color3.fromRGB(80, 80, 255)
 
 local EffectID = (workspace:GetAttribute("LightEffectID") or 0) + 1
 workspace:SetAttribute("LightEffectID", EffectID)
