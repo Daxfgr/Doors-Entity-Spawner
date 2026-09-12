@@ -1,5 +1,5 @@
 local sound = Instance.new("Sound")
-sound.Name = "Spawn"
+sound.Name = "RipperSpawn"
 sound.Parent = workspace
 
 sound.AcousticSimulationEnabled = true
@@ -15,7 +15,7 @@ sound.RollOffMinDistance = 0
 sound.RollOffMode = Enum.RollOffMode.InverseTapered
 
 local pitchShift = Instance.new("PitchShiftSoundEffect")
-pitchShift.Name = "Spawn"
+pitchShift.Name = "RipperSpawn"
 pitchShift.Octave = 1.5
 pitchShift.Enabled = true
 pitchShift.Priority = 0
