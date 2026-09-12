@@ -100,7 +100,7 @@ workspace.DescendantAdded:Connect(function(Object)
 	end
 end)
 
-while os.clock() - Start < FadeIn + FadeOut do
+while true do
 
 	if workspace:GetAttribute("LightEffectID") ~= MyEffectID then
 		return
@@ -223,6 +223,10 @@ while os.clock() - Start < FadeIn + FadeOut do
 				)
 			end
 		end
+	end
+
+	if Progress <= 0 then
+		break
 	end
 
 	RunService.Heartbeat:Wait()
