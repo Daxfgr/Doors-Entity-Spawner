@@ -11,7 +11,7 @@ end)
 
 local entity = Spawner:Create({
 	Entity = {
-		Name = "RipperMoving",
+		Name = "Ripper",
         Asset = getcustomasset("Assets/Ripper.rbxm", true),
 		HeightOffset = 4
 	},
