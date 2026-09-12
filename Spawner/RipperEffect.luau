@@ -21,11 +21,8 @@ local function GetProgress()
 		return Time / FadeIn
 	end
 
-	return 1 - math.clamp(
-		(Time - FadeIn) / FadeOut,
-		0,
-		1
-	)
+	local FadeTime = (Time - FadeIn) / FadeOut
+	return 1 - math.clamp(FadeTime, 0, 1)
 end
 
 local function AddObject(Object)
@@ -82,8 +79,11 @@ end
 workspace.DescendantAdded:Connect(function(Object)
 	if Object.Name == "LightFixture" then
 		task.defer(function()
-			ScanFixture(Object)
+			if Object.Parent then
+				ScanFixture(Object)
+			end
 		end)
+
 		return
 	end
 
@@ -91,7 +91,7 @@ workspace.DescendantAdded:Connect(function(Object)
 
 	if Fixture then
 		task.defer(function()
-			if Fixture.Parent then
+			if Object.Parent then
 				AddObject(Object)
 			end
 		end)
@@ -117,9 +117,18 @@ while os.clock() - Start < FadeIn + FadeOut do
 
 			local Target = Data.Neon and NeonRed or Red
 
-			Object.Color = Data.Color:Lerp(
-				Target,
-				Progress
+			local OriginalR = Data.Color.R
+			local OriginalG = Data.Color.G
+			local OriginalB = Data.Color.B
+
+			local TargetR = Target.R
+			local TargetG = Target.G
+			local TargetB = Target.B
+
+			Object.Color = Color3.new(
+				OriginalR + (TargetR - OriginalR) * Progress,
+				OriginalG + (TargetG - OriginalG) * Progress,
+				OriginalB + (TargetB - OriginalB) * Progress
 			)
 
 		elseif Data.Type == "Sequence" then
@@ -128,13 +137,16 @@ while os.clock() - Start < FadeIn + FadeOut do
 
 			for _, Point in ipairs(Data.Color.Keypoints) do
 
+				local Original = Point.Value
+
 				table.insert(
 					Keypoints,
 					ColorSequenceKeypoint.new(
 						Point.Time,
-						Point.Value:Lerp(
-							Red,
-							Progress
+						Color3.new(
+							Original.R + (Red.R - Original.R) * Progress,
+							Original.G + (Red.G - Original.G) * Progress,
+							Original.B + (Red.B - Original.B) * Progress
 						)
 					)
 				)
@@ -144,14 +156,16 @@ while os.clock() - Start < FadeIn + FadeOut do
 
 		elseif Data.Type == "Highlight" then
 
-			Object.FillColor = Data.FillColor:Lerp(
-				Red,
-				Progress
+			Object.FillColor = Color3.new(
+				Data.FillColor.R + (Red.R - Data.FillColor.R) * Progress,
+				Data.FillColor.G + (Red.G - Data.FillColor.G) * Progress,
+				Data.FillColor.B + (Red.B - Data.FillColor.B) * Progress
 			)
 
-			Object.OutlineColor = Data.OutlineColor:Lerp(
-				Red,
-				Progress
+			Object.OutlineColor = Color3.new(
+				Data.OutlineColor.R + (Red.R - Data.OutlineColor.R) * Progress,
+				Data.OutlineColor.G + (Red.G - Data.OutlineColor.G) * Progress,
+				Data.OutlineColor.B + (Red.B - Data.OutlineColor.B) * Progress
 			)
 		end
 	end
@@ -160,6 +174,7 @@ while os.clock() - Start < FadeIn + FadeOut do
 end
 
 if workspace:GetAttribute("LightEffectID") == MyEffectID then
+
 	for Object, Data in pairs(Objects) do
 
 		if Object.Parent then
