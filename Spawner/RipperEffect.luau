@@ -21,8 +21,11 @@ local function GetProgress()
 		return Time / FadeIn
 	end
 
-	local FadeTime = (Time - FadeIn) / FadeOut
-	return 1 - math.clamp(FadeTime, 0, 1)
+	return 1 - math.clamp(
+		(Time - FadeIn) / FadeOut,
+		0,
+		1
+	)
 end
 
 local function AddObject(Object)
@@ -83,7 +86,6 @@ workspace.DescendantAdded:Connect(function(Object)
 				ScanFixture(Object)
 			end
 		end)
-
 		return
 	end
 
@@ -105,6 +107,7 @@ while os.clock() - Start < FadeIn + FadeOut do
 	end
 
 	local Progress = GetProgress()
+	local Time = os.clock() - Start
 
 	for Object, Data in pairs(Objects) do
 
@@ -117,19 +120,29 @@ while os.clock() - Start < FadeIn + FadeOut do
 
 			local Target = Data.Neon and NeonRed or Red
 
-			local OriginalR = Data.Color.R
-			local OriginalG = Data.Color.G
-			local OriginalB = Data.Color.B
+			if Time <= FadeIn then
 
-			local TargetR = Target.R
-			local TargetG = Target.G
-			local TargetB = Target.B
+				Object.Color = Data.Color:Lerp(
+					Target,
+					Progress
+				)
 
-			Object.Color = Color3.new(
-				OriginalR + (TargetR - OriginalR) * Progress,
-				OriginalG + (TargetG - OriginalG) * Progress,
-				OriginalB + (TargetB - OriginalB) * Progress
-			)
+			else
+
+				local TargetH, TargetS, TargetV = Target:ToHSV()
+				local OriginalH, OriginalS, OriginalV = Data.Color:ToHSV()
+
+				local Fade = 1 - Progress
+
+				local S = TargetS + (OriginalS - TargetS) * Fade
+				local V = TargetV + (OriginalV - TargetV) * Fade
+
+				Object.Color = Color3.fromHSV(
+					TargetH,
+					S,
+					V
+				)
+			end
 
 		elseif Data.Type == "Sequence" then
 
@@ -137,17 +150,37 @@ while os.clock() - Start < FadeIn + FadeOut do
 
 			for _, Point in ipairs(Data.Color.Keypoints) do
 
-				local Original = Point.Value
+				local NewColor
+
+				if Time <= FadeIn then
+
+					NewColor = Point.Value:Lerp(
+						Red,
+						Progress
+					)
+
+				else
+
+					local TargetH, TargetS, TargetV = Red:ToHSV()
+					local OriginalH, OriginalS, OriginalV = Point.Value:ToHSV()
+
+					local Fade = 1 - Progress
+
+					local S = TargetS + (OriginalS - TargetS) * Fade
+					local V = TargetV + (OriginalV - TargetV) * Fade
+
+					NewColor = Color3.fromHSV(
+						TargetH,
+						S,
+						V
+					)
+				end
 
 				table.insert(
 					Keypoints,
 					ColorSequenceKeypoint.new(
 						Point.Time,
-						Color3.new(
-							Original.R + (Red.R - Original.R) * Progress,
-							Original.G + (Red.G - Original.G) * Progress,
-							Original.B + (Red.B - Original.B) * Progress
-						)
+						NewColor
 					)
 				)
 			end
@@ -156,17 +189,39 @@ while os.clock() - Start < FadeIn + FadeOut do
 
 		elseif Data.Type == "Highlight" then
 
-			Object.FillColor = Color3.new(
-				Data.FillColor.R + (Red.R - Data.FillColor.R) * Progress,
-				Data.FillColor.G + (Red.G - Data.FillColor.G) * Progress,
-				Data.FillColor.B + (Red.B - Data.FillColor.B) * Progress
-			)
+			if Time <= FadeIn then
 
-			Object.OutlineColor = Color3.new(
-				Data.OutlineColor.R + (Red.R - Data.OutlineColor.R) * Progress,
-				Data.OutlineColor.G + (Red.G - Data.OutlineColor.G) * Progress,
-				Data.OutlineColor.B + (Red.B - Data.OutlineColor.B) * Progress
-			)
+				Object.FillColor = Data.FillColor:Lerp(
+					Red,
+					Progress
+				)
+
+				Object.OutlineColor = Data.OutlineColor:Lerp(
+					Red,
+					Progress
+				)
+
+			else
+
+				local TargetH, TargetS, TargetV = Red:ToHSV()
+
+				local FillH, FillS, FillV = Data.FillColor:ToHSV()
+				local OutlineH, OutlineS, OutlineV = Data.OutlineColor:ToHSV()
+
+				local Fade = 1 - Progress
+
+				Object.FillColor = Color3.fromHSV(
+					TargetH,
+					TargetS + (FillS - TargetS) * Fade,
+					TargetV + (FillV - TargetV) * Fade
+				)
+
+				Object.OutlineColor = Color3.fromHSV(
+					TargetH,
+					TargetS + (OutlineS - TargetS) * Fade,
+					TargetV + (OutlineV - TargetV) * Fade
+				)
+			end
 		end
 	end
 
