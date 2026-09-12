@@ -106,6 +106,7 @@ end)
 
 entity:SetCallback("OnDespawning", function()
 	print("Entity is despawning")
+    entity.Model.RipperNew.Missing:Play()
 end)
 
 entity:SetCallback("OnDespawned", function()
