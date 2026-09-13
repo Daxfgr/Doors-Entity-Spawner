@@ -5,7 +5,6 @@ local Spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/Daxfg
 ---====== Create entity ======---
 
 task.spawn(function()
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/Daxfgr/Doors-Entity-Spawner/refs/heads/main/Spawner/RipperSpawn.lua"))()
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/Daxfgr/Doors-Entity-Spawner/refs/heads/main/Spawner/RipperEffect.luau"))()
 end)
 
@@ -74,6 +73,7 @@ local entity = Spawner:Create({
 
 entity:SetCallback("OnSpawned", function()
 	print("Entity has spawned")
+    entity.Model.RipperSpawn:Play()
 end)
 
 entity:SetCallback("OnStartMoving", function()
