@@ -17,7 +17,7 @@ local entity = Spawner:Create({
 	Lights = {
 		Flicker = {
 			Enabled = true, -- "true" -- "false"
-			Duration = 4
+			Duration = 3
 		},
 		Shatter = false, -- "true" -- "false"
 		Repair = false -- "true" -- "false"
@@ -134,4 +134,5 @@ end)
 
 ---====== Run entity ======---
 
+task.wait(1)
 entity:Run(true)
