@@ -1,6 +1,38 @@
 ---====== Load spawner ======---
 
-local Spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/Daxfgr/Doors-Entity-Spawner/refs/heads/main/Spawner/init.luau"))()
+local source = game:HttpGet(
+    "https://raw.githubusercontent.com/Daxfgr/Doors-Entity-Spawner/refs/heads/main/Spawner/init.luau"
+)
+
+local function replaceOnce(text, oldText, newText)
+    local startPosition, endPosition = string.find(text, oldText, 1, true)
+
+    if not startPosition then
+        error("Target code was not found")
+    end
+
+    return string.sub(text, 1, startPosition - 1)
+        .. newText
+        .. string.sub(text, endPosition + 1)
+end
+
+source = replaceOnce(
+    source,
+    "Modules.Module_Events.flicker(currentRoom, config.Lights.Flicker.Duration)",
+    [[task.delay(1, function()
+            Modules.Module_Events.flicker(currentRoom, config.Lights.Flicker.Duration)
+        end)]]
+)
+
+source = replaceOnce(
+    source,
+    "task.spawn(Earthquake)",
+    [[task.delay(1, function()
+                task.spawn(Earthquake)
+            end)]]
+)
+
+local Spawner = loadstring(source)()
 
 ---====== Create entity ======---
 
