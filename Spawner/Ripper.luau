@@ -134,5 +134,4 @@ end)
 
 ---====== Run entity ======---
 
-task.wait(1)
 entity:Run(true)
