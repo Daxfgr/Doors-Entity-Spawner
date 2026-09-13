@@ -64,7 +64,7 @@ local entity = Spawner:Create({
 	},
 	Death = {
 		Type = "Guiding", -- "Guiding" -- "Curious"
-		Hints = {"You died to who call Ripper.", "You can tell its presence by the lights and its scream.", "Hide when he comes by!"},
+		Hints = {"You died to who call Ripper.", "You can tell its presence by the lights and its scream.", "Hide when he comes by!", "Pay close attention next time."},
 		Cause = "Ripper"
 	}
 })
