@@ -182,6 +182,7 @@ local entity = Spawner:Create({
 	local originalCameraType
 	local originalCameraSubject
 	local blockGui
+	local deathConnection
 
 	if LocalPlayer then
 		local PlayerModule = LocalPlayer.PlayerScripts:FindFirstChild("PlayerModule")
@@ -218,6 +219,28 @@ local entity = Spawner:Create({
 			block.Parent = blockGui
 
 			blockGui.Parent = playerGui
+		end
+
+		local character = LocalPlayer.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+
+		if humanoid then
+			deathConnection = humanoid.Died:Connect(function()
+				if deathConnection then
+					deathConnection:Disconnect()
+					deathConnection = nil
+				end
+
+				if blockGui then
+					blockGui:Destroy()
+					blockGui = nil
+				end
+
+				if controls then
+					controls:Enable()
+					controls = nil
+				end
+			end)
 		end
 	end
 
@@ -263,15 +286,16 @@ local entity = Spawner:Create({
 	)
 
 	fadeOut:Play()
-    DamagePlayer(entity)
-    fadeOut.Completed:Wait()
+	DamagePlayer(entity)
+	fadeOut.Completed:Wait()
 
-    staticSound.Volume = 0
+	staticSound.Volume = 0
 
-    jumpscareFace.RotSpeed = originalRotSpeed
+	jumpscareFace.RotSpeed = originalRotSpeed
 
 	if controls then
 		controls:Enable()
+		controls = nil
 	end
 
 	if LocalPlayer then
@@ -281,14 +305,9 @@ local entity = Spawner:Create({
 			camera.CameraType = originalCameraType or Enum.CameraType.Custom
 			camera.CameraSubject = originalCameraSubject
 		end
-
-		if blockGui then
-			blockGui:Destroy()
-		end
 	end
 
 	RestoreSounds()
-	DamagePlayer(entity)
 
 	if entity:IsAlive() then
 		entity:JumpscareDespawn()
