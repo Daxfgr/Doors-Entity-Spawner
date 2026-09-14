@@ -84,8 +84,85 @@ local entity = Spawner:Create({
 		},
 
 		Action = function(entity, DamagePlayer)
-			DamagePlayer(entity)
-		end
+            task.spawn(function()
+                entity.Model.Missing:Stop()
+                entity:Pause()
+
+                local model = entity.Model
+                local target = model.RipperNew
+                local attachment = target.Attachment
+                local static = attachment.Static
+                local ripper = attachment.Ripper
+                local face = ripper.Face
+                local jumpscareFace = ripper["Jumpscare Face"]
+                local jumpscareSound = model.Jumpscare
+                local staticSound = model.Static
+
+                static.TimeScale = 0
+                jumpscareFace.TimeScale = 0
+                face.Enabled = false
+                jumpscareFace.Enabled = true
+
+                local players = game:GetService("Players")
+                local runService = game:GetService("RunService")
+                local player = players.LocalPlayer
+                local camera = workspace.CurrentCamera
+                local targetPosition = target:IsA("BasePart") and target.Position or target:GetPivot().Position
+
+                if camera then
+                    local startCFrame = camera.CFrame
+                    local targetCFrame = CFrame.lookAt(camera.CFrame.Position, targetPosition)
+                    local startTime = os.clock()
+
+                    while true do
+                        local alpha = math.clamp((os.clock() - startTime) / 1, 0, 1)
+                        camera.CFrame = startCFrame:Lerp(targetCFrame, alpha)
+
+                        if alpha >= 1 then
+                            break
+                        end
+
+                        runService.RenderStepped:Wait()
+                    end
+                end
+
+                jumpscareSound:Play()
+                task.wait(1)
+
+                staticSound.Volume = 0
+                staticSound:Play()
+
+                local fadeInStart = os.clock()
+                while true do
+                    local alpha = math.clamp((os.clock() - fadeInStart) / 1, 0, 1)
+                    staticSound.Volume = 10 * alpha
+
+                    if alpha >= 1 then
+                        break
+                    end
+
+                    runService.Heartbeat:Wait()
+                end
+
+                task.wait(2)
+
+                local fadeOutStart = os.clock()
+                while true do
+                    local alpha = math.clamp((os.clock() - fadeOutStart) / 1, 0, 1)
+                    staticSound.Volume = 10 * (1 - alpha)
+
+                    if alpha >= 1 then
+                        break
+                    end
+
+                    runService.Heartbeat:Wait()
+                end
+
+                staticSound.Volume = 0
+                entity:Fall()
+                DamagePlayer(entity)
+            end)
+        end
 	},
 	Crucifixion = {
 		Type = "Guiding", -- "Guiding"
