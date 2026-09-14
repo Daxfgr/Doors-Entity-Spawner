@@ -46,7 +46,6 @@ local entity = Spawner:Create({
 			Amount = --Number,
 			IgnoreHiding = --Select -- "true" -- "false"
 		},
-
 		Action = function(entity, DamagePlayer)
 			DamagePlayer(entity)
 		end
