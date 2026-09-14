@@ -94,16 +94,47 @@ local entity = Spawner:Create({
         local pausedSounds = {}
 
         local cameraLockName = "RipperJumpscareCamera"
-        local deathCameraName = "RipperDeathCamera"
-
         local cameraReleased = false
         local deathHandled = false
         local deathConnection
 
-        for _, object in ipairs(game:GetDescendants()) do
-            if object:IsA("Sound") and object.Playing then
-                table.insert(pausedSounds, object)
-                object:Pause()
+        local target = model:WaitForChild("RipperNew")
+        local attachment = target:WaitForChild("Attachment")
+        local staticParticleEmitter = attachment.Static:WaitForChild("ParticleEmitter")
+        local ripper = attachment:WaitForChild("Ripper")
+        local face = ripper:WaitForChild("Face")
+        local jumpscareFace = ripper:WaitForChild("Jumpscare Face")
+        local jumpscareSound = model:WaitForChild("Jumpscare")
+        local staticSound = model:WaitForChild("Static")
+
+        local localAudioId = getcustomasset(
+            "Assets/Ripper Jumpscare.mp3",
+            true
+        )
+
+        jumpscareSound.SoundId = localAudioId
+        jumpscareSound.Volume = 10
+        jumpscareSound.Looped = false
+
+        local function getTargetPosition()
+            if target:IsA("BasePart") then
+                return target.Position
+            end
+
+            return target:GetPivot().Position
+        end
+
+        local function pauseOtherSounds()
+            for _, object in ipairs(game:GetDescendants()) do
+                if object:IsA("Sound")
+                    and object.Playing
+                    and object ~= jumpscareSound
+                    and object ~= staticSound
+                    and object ~= model.Missing
+                then
+                    table.insert(pausedSounds, object)
+                    object:Pause()
+                end
             end
         end
 
@@ -115,39 +146,21 @@ local entity = Spawner:Create({
             end
         end
 
-        local function getTargetPosition(target)
-            if target:IsA("BasePart") then
-                return target.Position
-            end
-
-            return target:GetPivot().Position
-        end
-
-        local function holdCameraAtCurrentPosition()
-            if not camera then
+        local function releaseCamera()
+            if cameraReleased then
                 return
             end
 
-            local frozenCFrame = camera.CFrame
-
-            RunService:UnbindFromRenderStep(cameraLockName)
-
             cameraReleased = true
-            camera.CameraType = Enum.CameraType.Scriptable
-            camera.CFrame = frozenCFrame
 
-            RunService:BindToRenderStep(
-                deathCameraName,
-                Enum.RenderPriority.Camera.Value + 10,
-                function()
-                    if not camera then
-                        return
-                    end
+            if camera then
+                local currentCFrame = camera.CFrame
 
-                    camera.CameraType = Enum.CameraType.Scriptable
-                    camera.CFrame = frozenCFrame
-                end
-            )
+                RunService:UnbindFromRenderStep(cameraLockName)
+
+                camera.CameraType = Enum.CameraType.Scriptable
+                camera.CFrame = currentCFrame
+            end
         end
 
         local function fallAndDespawn()
@@ -189,7 +202,7 @@ local entity = Spawner:Create({
 
             deathHandled = true
 
-            holdCameraAtCurrentPosition()
+            releaseCamera()
             resumeSounds()
 
             task.spawn(fallAndDespawn)
@@ -200,26 +213,27 @@ local entity = Spawner:Create({
             end
         end
 
-        entity.Model.Missing:Stop()
+        model.Missing:Stop()
         entity:Pause()
+        pauseOtherSounds()
 
-        local target = model:WaitForChild("RipperNew")
-        local attachment = target:WaitForChild("Attachment")
-        local staticParticleEmitter = attachment.Static:WaitForChild("ParticleEmitter")
-        local ripper = attachment:WaitForChild("Ripper")
-        local face = ripper:WaitForChild("Face")
-        local jumpscareFace = ripper:WaitForChild("Jumpscare Face")
-        local jumpscareSound = model:WaitForChild("Jumpscare")
-        local staticSound = model:WaitForChild("Static")
+        staticParticleEmitter.TimeScale = 0
 
-        local localAudioId = getcustomasset(
-            "Assets/Ripper Jumpscare.mp3",
-            true
-        )
+        face.Enabled = false
 
-        jumpscareSound.SoundId = localAudioId
-        jumpscareSound.Volume = 10
-        jumpscareSound.Looped = false
+        jumpscareFace.Enabled = true
+        jumpscareFace.TimeScale = 1
+
+        RunService.RenderStepped:Wait()
+        RunService.RenderStepped:Wait()
+        RunService.RenderStepped:Wait()
+
+        task.wait(0.5)
+
+        if jumpscareFace.Parent then
+            jumpscareFace.Enabled = true
+            jumpscareFace.TimeScale = 0
+        end
 
         local humanoid = player.Character
             and player.Character:FindFirstChildOfClass("Humanoid")
@@ -228,27 +242,13 @@ local entity = Spawner:Create({
             deathConnection = humanoid.Died:Connect(handleDeath)
         end
 
-        staticParticleEmitter.TimeScale = 0
-
-        face.Enabled = false
-
-        jumpscareFace.TimeScale = 1
-        jumpscareFace.Enabled = true
-
-        task.wait(0.25)
-
-        if jumpscareFace.Parent then
-            jumpscareFace.Enabled = true
-            jumpscareFace.TimeScale = 0
-        end
-
         if camera then
             cameraReleased = false
             camera.CameraType = Enum.CameraType.Scriptable
 
             local startCFrame = camera.CFrame
             local startTime = os.clock()
-            local cameraDuration = 0.1
+            local cameraDuration = 0.5
 
             RunService:BindToRenderStep(
                 cameraLockName,
@@ -264,11 +264,10 @@ local entity = Spawner:Create({
                         1
                     )
 
-                    local targetPosition = getTargetPosition(target)
                     local currentPosition = camera.CFrame.Position
                     local targetCFrame = CFrame.lookAt(
                         currentPosition,
-                        targetPosition
+                        getTargetPosition()
                     )
 
                     if alpha < 1 then
@@ -287,19 +286,17 @@ local entity = Spawner:Create({
             if not cameraReleased and target.Parent then
                 camera.CFrame = CFrame.lookAt(
                     camera.CFrame.Position,
-                    getTargetPosition(target)
+                    getTargetPosition()
                 )
             end
         end
 
-        jumpscareSound:Stop()
         jumpscareSound.TimePosition = 0
         jumpscareSound:Play()
 
         task.wait(1)
 
         staticSound.Volume = 0
-        staticSound.TimePosition = 0
         staticSound:Play()
 
         local fadeInStart = os.clock()
