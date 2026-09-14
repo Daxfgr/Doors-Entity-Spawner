@@ -176,7 +176,6 @@ local entity = Spawner:Create({
 	local jumpscareAsset = getcustomasset("Assets/Ripper Jumpscare.mp3", true)
 	local jumpscareSound = model.Jumpscare
 	jumpscareSound.SoundId = jumpscareAsset
-	task.wait(1)
 	jumpscareSound:Play()
 	task.wait(1)
 	local staticSound = model.Static
