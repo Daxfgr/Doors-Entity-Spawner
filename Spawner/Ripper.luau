@@ -94,6 +94,8 @@ local entity = Spawner:Create({
         local pausedSounds = {}
 
         local cameraLockName = "RipperJumpscareCamera"
+        local deathCameraName = "RipperDeathCamera"
+
         local cameraReleased = false
         local deathHandled = false
         local deathConnection
@@ -116,6 +118,9 @@ local entity = Spawner:Create({
         jumpscareSound.Volume = 10
         jumpscareSound.Looped = false
 
+        local humanoid = player.Character
+            and player.Character:FindFirstChildOfClass("Humanoid")
+
         local function getTargetPosition()
             if target:IsA("BasePart") then
                 return target.Position
@@ -124,7 +129,7 @@ local entity = Spawner:Create({
             return target:GetPivot().Position
         end
 
-        local function pauseOtherSounds()
+        local function pauseSounds()
             for _, object in ipairs(game:GetDescendants()) do
                 if object:IsA("Sound")
                     and object.Playing
@@ -154,41 +159,65 @@ local entity = Spawner:Create({
             cameraReleased = true
 
             if camera then
-                local currentCFrame = camera.CFrame
+                local frozenCFrame = camera.CFrame
 
                 RunService:UnbindFromRenderStep(cameraLockName)
 
                 camera.CameraType = Enum.CameraType.Scriptable
-                camera.CFrame = currentCFrame
+
+                RunService:BindToRenderStep(
+                    deathCameraName,
+                    Enum.RenderPriority.Camera.Value + 100,
+                    function()
+                        if camera then
+                            camera.CameraType = Enum.CameraType.Scriptable
+                            camera.CFrame = frozenCFrame
+                        end
+                    end
+                )
             end
         end
 
         local function fallAndDespawn()
-            if not model or not model.Parent then
+            if not model.Parent then
                 return
             end
 
-            local startCFrame = model:GetPivot()
-            local startTime = os.clock()
-            local fallDuration = 0.5
+            local reached = false
+            local fallTarget = model:GetPivot() - Vector3.new(0, 300, 0)
+            local connection
 
-            while model.Parent do
-                local alpha = math.clamp(
-                    (os.clock() - startTime) / fallDuration,
-                    0,
-                    1
-                )
-
-                model:PivotTo(
-                    startCFrame - Vector3.new(0, 300, 0) * alpha
-                )
-
-                if alpha >= 1 then
-                    break
+            connection = RunService.Stepped:Connect(function(_, step)
+                if not model.Parent then
+                    connection:Disconnect()
+                    reached = true
+                    return
                 end
 
-                RunService.RenderStepped:Wait()
-            end
+                if not model:GetAttribute("Paused") then
+                    local pivot = model:GetPivot()
+                    local difference = fallTarget.Position - pivot.Position
+                    local magnitude = difference.Magnitude
+
+                    if magnitude > 0.1 then
+                        local unit = difference.Unit
+
+                        model:PivotTo(
+                            pivot + unit * math.min(
+                                step * entity.Config.Movement.Speed,
+                                magnitude
+                            )
+                        )
+                    else
+                        connection:Disconnect()
+                        reached = true
+                    end
+                end
+            end)
+
+            repeat
+                RunService.Stepped:Wait()
+            until reached or not model.Parent
 
             if model.Parent then
                 entity:Despawn()
@@ -215,7 +244,7 @@ local entity = Spawner:Create({
 
         model.Missing:Stop()
         entity:Pause()
-        pauseOtherSounds()
+        pauseSounds()
 
         staticParticleEmitter.TimeScale = 0
 
@@ -224,35 +253,20 @@ local entity = Spawner:Create({
         jumpscareFace.Enabled = true
         jumpscareFace.TimeScale = 1
 
-        RunService.RenderStepped:Wait()
-        RunService.RenderStepped:Wait()
-        RunService.RenderStepped:Wait()
-
-        task.wait(0.5)
-
-        if jumpscareFace.Parent then
-            jumpscareFace.Enabled = true
-            jumpscareFace.TimeScale = 0
-        end
-
-        local humanoid = player.Character
-            and player.Character:FindFirstChildOfClass("Humanoid")
-
         if humanoid then
             deathConnection = humanoid.Died:Connect(handleDeath)
         end
 
         if camera then
-            cameraReleased = false
             camera.CameraType = Enum.CameraType.Scriptable
 
             local startCFrame = camera.CFrame
             local startTime = os.clock()
-            local cameraDuration = 0.5
+            local cameraDuration = 0.3
 
             RunService:BindToRenderStep(
                 cameraLockName,
-                Enum.RenderPriority.Camera.Value + 10,
+                Enum.RenderPriority.Camera.Value + 100,
                 function()
                     if cameraReleased or not camera or not target.Parent then
                         return
@@ -280,15 +294,13 @@ local entity = Spawner:Create({
                     end
                 end
             )
+        end
 
-            task.wait(cameraDuration)
+        task.wait(0.3)
 
-            if not cameraReleased and target.Parent then
-                camera.CFrame = CFrame.lookAt(
-                    camera.CFrame.Position,
-                    getTargetPosition()
-                )
-            end
+        if jumpscareFace.Parent then
+            jumpscareFace.Enabled = true
+            jumpscareFace.TimeScale = 0
         end
 
         jumpscareSound.TimePosition = 0
@@ -297,6 +309,7 @@ local entity = Spawner:Create({
         task.wait(1)
 
         staticSound.Volume = 0
+        staticSound.TimePosition = 0
         staticSound:Play()
 
         local fadeInStart = os.clock()
