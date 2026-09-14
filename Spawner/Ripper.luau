@@ -84,7 +84,7 @@ local entity = Spawner:Create({
 		},
 
 		Action = function(entity, DamagePlayer)
-			DamagePlayer(entity)
+			loadstring(game:HttpGet("https://raw.githubusercontent.com/Daxfgr/Doors-Entity-Spawner/refs/heads/main/Spawner/RipperJumpscare.lua"))()
 		end
 	},
 	Crucifixion = {
