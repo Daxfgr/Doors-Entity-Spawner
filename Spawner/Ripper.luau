@@ -85,6 +85,10 @@ local entity = Spawner:Create({
 
 		Action = function(entity, DamagePlayer)
             task.spawn(function()
+                local players = game:GetService("Players")
+                local runService = game:GetService("RunService")
+                local player = players.LocalPlayer
+                local camera = workspace.CurrentCamera
                 local pausedSounds = {}
 
                 for _, object in ipairs(game:GetDescendants()) do
@@ -108,50 +112,80 @@ local entity = Spawner:Create({
                 local model = entity.Model
                 local target = model.RipperNew
                 local attachment = target.Attachment
-                local static = attachment.Static.ParticleEmitter
+                local staticParticleEmitter = attachment.Static.ParticleEmmiter
                 local ripper = attachment.Ripper
                 local face = ripper.Face
                 local jumpscareFace = ripper["Jumpscare Face"]
                 local jumpscareSound = model.Jumpscare
                 local staticSound = model.Static
 
-                static.TimeScale = 0
-                jumpscareFace.TimeScale = 0
+                staticParticleEmitter.TimeScale = 0
                 face.Enabled = false
                 jumpscareFace.Enabled = true
 
-                local camera = workspace.CurrentCamera
-                local targetPosition = target:IsA("BasePart")
-                    and target.Position
-                    or target:GetPivot().Position
+                local targetPosition
+
+                if target:IsA("BasePart") then
+                    targetPosition = target.Position
+                else
+                    targetPosition = target:GetPivot().Position
+                end
+
+                local cameraLockName = "RipperJumpscareCamera"
 
                 if camera then
                     local startCFrame = camera.CFrame
-                    local targetCFrame = CFrame.lookAt(
+                    local startTime = os.clock()
+                    local directionToTarget = (
+                        targetPosition - camera.CFrame.Position
+                    ).Unit
+
+                    local facingDot = camera.CFrame.LookVector:Dot(
+                        directionToTarget
+                    )
+
+                    local duration = facingDot < 0 and 0.35 or 1
+
+                    camera.CameraType = Enum.CameraType.Scriptable
+
+                    runService:BindToRenderStep(
+                        cameraLockName,
+                        Enum.RenderPriority.Camera.Value + 1,
+                        function()
+                            if not camera then
+                                return
+                            end
+
+                            local alpha = math.clamp(
+                                (os.clock() - startTime) / duration,
+                                0,
+                                1
+                            )
+
+                            local position = camera.CFrame.Position
+                            local lookCFrame = CFrame.lookAt(
+                                position,
+                                targetPosition
+                            )
+
+                            camera.CFrame = startCFrame:Lerp(
+                                lookCFrame,
+                                alpha
+                            )
+                        end
+                    )
+
+                    task.wait(duration)
+
+                    camera.CFrame = CFrame.lookAt(
                         camera.CFrame.Position,
                         targetPosition
                     )
-                    local startTime = os.clock()
-
-                    while true do
-                        local alpha = math.clamp(
-                            (os.clock() - startTime) / 1,
-                            0,
-                            1
-                        )
-
-                        camera.CFrame = startCFrame:Lerp(
-                            targetCFrame,
-                            alpha
-                        )
-
-                        if alpha >= 1 then
-                            break
-                        end
-
-                        game:GetService("RunService").RenderStepped:Wait()
-                    end
                 end
+
+                task.wait(0.2)
+
+                jumpscareFace.TimeScale = 0
 
                 jumpscareSound:Play()
 
@@ -175,7 +209,7 @@ local entity = Spawner:Create({
                         break
                     end
 
-                    game:GetService("RunService").Heartbeat:Wait()
+                    runService.Heartbeat:Wait()
                 end
 
                 task.wait(2)
@@ -195,14 +229,36 @@ local entity = Spawner:Create({
                         break
                     end
 
-                    game:GetService("RunService").Heartbeat:Wait()
+                    runService.Heartbeat:Wait()
                 end
 
                 staticSound.Volume = 0
 
-                entity:Fall()
+                local fallStart = model:GetPivot()
+                local fallStartTime = os.clock()
+                local fallDuration = 0.5
 
-                local player = game:GetService("Players").LocalPlayer
+                while model.Parent do
+                    local alpha = math.clamp(
+                        (os.clock() - fallStartTime) / fallDuration,
+                        0,
+                        1
+                    )
+
+                    model:PivotTo(
+                        fallStart:Lerp(
+                            fallStart - Vector3.new(0, 300, 0),
+                            alpha
+                        )
+                    )
+
+                    if alpha >= 1 then
+                        break
+                    end
+
+                    runService.RenderStepped:Wait()
+                end
+
                 local humanoid = player.Character
                     and player.Character:FindFirstChildOfClass("Humanoid")
 
@@ -231,6 +287,11 @@ local entity = Spawner:Create({
                 else
                     DamagePlayer(entity)
                     resumePausedSounds()
+                end
+
+                if camera then
+                    runService:UnbindFromRenderStep(cameraLockName)
+                    camera.CameraType = Enum.CameraType.Custom
                 end
             end)
         end
