@@ -90,10 +90,15 @@ local entity = Spawner:Create({
 
         local target = model:WaitForChild("RipperNew")
         local attachment = target:WaitForChild("Attachment")
-        local staticParticleEmitter = attachment.Static:WaitForChild("ParticleEmitter")
+
+        local staticParticleEmitter = attachment.Static:WaitForChild(
+            "ParticleEmitter"
+        )
+
         local ripper = attachment:WaitForChild("Ripper")
         local face = ripper:WaitForChild("Face")
         local jumpscareFace = ripper:WaitForChild("Jumpscare Face")
+
         local jumpscareSound = model:WaitForChild("Jumpscare")
         local staticSound = model:WaitForChild("Static")
 
@@ -112,14 +117,16 @@ local entity = Spawner:Create({
         staticParticleEmitter.TimeScale = 0
 
         face.Enabled = false
+
         jumpscareFace.Enabled = true
         jumpscareFace.TimeScale = 1
 
-        RunService.Heartbeat:Wait()
-        RunService.Heartbeat:Wait()
+        task.wait(1)
 
-        jumpscareFace.Enabled = true
-        jumpscareFace.TimeScale = 0
+        if jumpscareFace.Parent then
+            jumpscareFace.Enabled = true
+            jumpscareFace.TimeScale = 0
+        end
 
         jumpscareSound.TimePosition = 0
         jumpscareSound:Play()
@@ -173,54 +180,7 @@ local entity = Spawner:Create({
 
         staticSound.Volume = 0
 
-        entity:Resume()
-
-        local fallTarget = model:GetPivot()
-            - Vector3.new(0, 300, 0)
-
-        local reached = false
-        local connection
-
-        connection = RunService.Stepped:Connect(function(_, step)
-            if not model.Parent then
-                connection:Disconnect()
-                reached = true
-                return
-            end
-
-            if not model:GetAttribute("Paused") then
-                local pivot = model:GetPivot()
-                local difference = fallTarget.Position - pivot.Position
-                local magnitude = difference.Magnitude
-
-                if magnitude > 0.1 then
-                    local direction = difference.Unit
-
-                    model:PivotTo(
-                        pivot + direction * math.min(
-                            step * entity.Config.Movement.Speed,
-                            magnitude
-                        )
-                    )
-                else
-                    model:PivotTo(fallTarget)
-                    connection:Disconnect()
-                    reached = true
-                end
-            end
-        end)
-
-        repeat
-            RunService.Stepped:Wait()
-        until reached or not model.Parent
-
-        if connection then
-            connection:Disconnect()
-        end
-
-        if model.Parent then
-            entity:Despawn()
-        end
+        entity:Fall()
     end)
 end
 	},
