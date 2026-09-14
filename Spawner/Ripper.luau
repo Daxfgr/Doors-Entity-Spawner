@@ -170,6 +170,11 @@ local entity = Spawner:Create({
 	local jumpscareFace = attachment.Ripper["Jumpscare Face"]
 
 	local originalRotSpeed = jumpscareFace.RotSpeed
+	local missingSound = model:FindFirstChild("Missing")
+
+	if missingSound then
+		missingSound.Volume = 0
+	end
 
 	staticParticle.TimeScale = 0
 	face.Enabled = false
@@ -188,6 +193,8 @@ local entity = Spawner:Create({
 	local jumpscareSound = model.Jumpscare
 	jumpscareSound.SoundId = jumpscareAsset
 	jumpscareSound:Play()
+
+	DamagePlayer(entity)
 
 	task.wait(1)
 
@@ -217,10 +224,6 @@ local entity = Spawner:Create({
 
 	jumpscareFace.RotSpeed = originalRotSpeed
 	RestoreSounds()
-
-	DamagePlayer(entity)
-
-	task.wait()
 
 	if entity:IsAlive() then
 		entity:JumpscareDespawn()
