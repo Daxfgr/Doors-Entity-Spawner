@@ -159,6 +159,8 @@ local entity = Spawner:Create({
 			IgnoreHiding = false -- "true" -- "false"
 		},
 		Action = function(entity, DamagePlayer)
+	local Players = game:GetService("Players")
+	local LocalPlayer = Players.LocalPlayer
 	local model = entity.Model
 	local attachment = model.RipperNew.Attachment
 
@@ -174,6 +176,49 @@ local entity = Spawner:Create({
 
 	if missingSound then
 		missingSound.Volume = 0
+	end
+
+	local controls
+	local originalCameraType
+	local originalCameraSubject
+	local blockGui
+
+	if LocalPlayer then
+		local PlayerModule = LocalPlayer.PlayerScripts:FindFirstChild("PlayerModule")
+
+		if PlayerModule then
+			controls = require(PlayerModule):GetControls()
+			controls:Disable()
+		end
+
+		local camera = workspace.CurrentCamera
+
+		if camera then
+			originalCameraType = camera.CameraType
+			originalCameraSubject = camera.CameraSubject
+			camera.CameraType = Enum.CameraType.Scriptable
+		end
+
+		local playerGui = LocalPlayer:FindFirstChildOfClass("PlayerGui")
+
+		if playerGui then
+			blockGui = Instance.new("ScreenGui")
+			blockGui.Name = "RipperJumpscareBlock"
+			blockGui.IgnoreGuiInset = true
+			blockGui.DisplayOrder = 1000000
+			blockGui.ResetOnSpawn = false
+
+			local block = Instance.new("TextButton")
+			block.Size = UDim2.fromScale(1, 1)
+			block.BackgroundTransparency = 1
+			block.Text = ""
+			block.AutoButtonColor = false
+			block.Active = true
+			block.Modal = true
+			block.Parent = blockGui
+
+			blockGui.Parent = playerGui
+		end
 	end
 
 	staticParticle.TimeScale = 0
@@ -221,11 +266,26 @@ local entity = Spawner:Create({
 	fadeOut.Completed:Wait()
 
 	jumpscareFace.RotSpeed = originalRotSpeed
+
+	if controls then
+		controls:Enable()
+	end
+
+	if LocalPlayer then
+		local camera = workspace.CurrentCamera
+
+		if camera then
+			camera.CameraType = originalCameraType or Enum.CameraType.Custom
+			camera.CameraSubject = originalCameraSubject
+		end
+
+		if blockGui then
+			blockGui:Destroy()
+		end
+	end
+
 	RestoreSounds()
-
 	DamagePlayer(entity)
-
-	task.wait()
 
 	if entity:IsAlive() then
 		entity:JumpscareDespawn()
