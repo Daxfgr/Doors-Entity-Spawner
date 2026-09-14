@@ -113,7 +113,7 @@ local entity = Spawner:Create({
 
                 local target = model:WaitForChild("RipperNew")
                 local attachment = target:WaitForChild("Attachment")
-                local staticParticleEmitter = attachment.Static:WaitForChild("ParticleEmmiter")
+                local staticParticleEmitter = attachment.Static:WaitForChild("ParticleEmitter")
                 local ripper = attachment:WaitForChild("Ripper")
                 local face = ripper:WaitForChild("Face")
                 local jumpscareFace = ripper:WaitForChild("Jumpscare Face")
