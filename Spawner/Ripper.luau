@@ -161,36 +161,70 @@ local entity = Spawner:Create({
 		Action = function(entity, DamagePlayer)
 	local model = entity.Model
 	local attachment = model.RipperNew.Attachment
+
 	entity:Pause()
 	MuteSounds()
+
 	local staticParticle = attachment.Static.ParticleEmitter
 	local face = attachment.Ripper.Face
 	local jumpscareFace = attachment.Ripper["Jumpscare Face"]
+
+	local originalRotSpeed = jumpscareFace.RotSpeed
+
 	staticParticle.TimeScale = 0
 	face.Enabled = false
 	jumpscareFace.Enabled = true
 	jumpscareFace.TimeScale = 1
-	jumpscareFace:Emit(1000)
-	task.wait()
+	jumpscareFace.RotSpeed = NumberRange.new(0)
+
+	local amount = math.max(1, math.ceil(jumpscareFace.Rate * jumpscareFace.Lifetime.Max))
+	jumpscareFace:Emit(amount)
+
+	task.wait(0.1)
+
 	jumpscareFace.TimeScale = 0
+
 	local jumpscareAsset = getcustomasset("Assets/Ripper Jumpscare.mp3", true)
 	local jumpscareSound = model.Jumpscare
 	jumpscareSound.SoundId = jumpscareAsset
 	jumpscareSound:Play()
+
 	task.wait(1)
+
 	local staticSound = model.Static
 	staticSound.Volume = 0
 	staticSound:Play()
-	local fadeIn = TweenService:Create(staticSound, TweenInfo.new(1, Enum.EasingStyle.Linear), {Volume = 10})
+
+	local fadeIn = TweenService:Create(
+		staticSound,
+		TweenInfo.new(1, Enum.EasingStyle.Linear),
+		{Volume = 10}
+	)
+
 	fadeIn:Play()
 	fadeIn.Completed:Wait()
+
 	task.wait(1)
-	local fadeOut = TweenService:Create(staticSound, TweenInfo.new(0.5, Enum.EasingStyle.Linear), {Volume = 0})
+
+	local fadeOut = TweenService:Create(
+		staticSound,
+		TweenInfo.new(0.5, Enum.EasingStyle.Linear),
+		{Volume = 0}
+	)
+
 	fadeOut:Play()
-	DamagePlayer(entity)
 	fadeOut.Completed:Wait()
+
+	jumpscareFace.RotSpeed = originalRotSpeed
 	RestoreSounds()
-	entity:JumpscareDespawn()
+
+	DamagePlayer(entity)
+
+	task.wait()
+
+	if entity:IsAlive() then
+		entity:JumpscareDespawn()
+	end
 end
 	},
 	Crucifixion = {
@@ -254,7 +288,6 @@ end)
 
 entity:SetCallback("OnDamagePlayer", function(newHealth: number)
 	if newHealth <= 0 then
-        RestoreSounds()
 		print("Entity has killed the player")
 	else
 		print("Entity has damaged the player")
