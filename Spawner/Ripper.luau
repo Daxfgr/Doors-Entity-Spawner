@@ -32,7 +32,83 @@ source = replaceOnce(
             end)]]
 )
 
+source = replaceOnce(
+    source,
+    [[Despawn = function(self)
+            if self:IsAlive() then
+                self.Model:Destroy()
+                local i = table.find(Module.ActiveEntities, self)
+                if i then
+                    table.remove(Module.ActiveEntities, i)
+                end
+                task.spawn(self.RunCallback, self, "OnDespawned")
+            end
+        end]],
+    [[Despawn = function(self)
+            if self:IsAlive() then
+                self.Model:Destroy()
+                local i = table.find(Module.ActiveEntities, self)
+                if i then
+                    table.remove(Module.ActiveEntities, i)
+                end
+                task.spawn(self.RunCallback, self, "OnDespawned")
+            end
+        end,
+        JumpscareDespawn = function(self)
+            if not self:IsAlive() then
+                return
+            end
+
+            local model = self.Model
+            local config = self.Config
+
+            model:SetAttribute("Despawning", true)
+            model:SetAttribute("Paused", false)
+
+            task.spawn(self.RunCallback, self, "OnDespawning")
+
+            EntityMoveTo(
+                model,
+                model:GetPivot() - Vector3.new(0, 300, 0),
+                config.Movement.Speed
+            )
+
+            self:Despawn()
+        end]]
+)
+
 local Spawner = loadstring(source)()
+
+local TweenService = game:GetService("TweenService")
+local originalVolumes = {}
+local soundsMuted = false
+
+local function MuteSounds()
+    if soundsMuted then
+        return
+    end
+
+    soundsMuted = true
+    originalVolumes = {}
+
+    for _, object in ipairs(game:GetDescendants()) do
+        if object:IsA("Sound") and object.IsPlaying then
+            originalVolumes[object] = object.Volume
+            object.Volume = 0
+        end
+    end
+end
+
+local function RestoreSounds()
+    for sound, volume in pairs(originalVolumes) do
+        if sound and sound.Parent then
+            sound.Volume = volume
+        end
+    end
+
+    originalVolumes = {}
+    soundsMuted = false
+end
 
 ---====== Create entity ======---
 
@@ -82,10 +158,58 @@ local entity = Spawner:Create({
 			Amount = 125,
 			IgnoreHiding = false -- "true" -- "false"
 		},
-
 		Action = function(entity, DamagePlayer)
-			DamagePlayer(entity)
-		end
+        local model = entity.Model
+        local attachment = model.RipperNew.Attachment
+        entity:Pause()
+        MuteSounds()
+        local staticParticle = attachment.Static.ParticleEmitter
+        local face = attachment.Ripper.Face
+        local jumpscareFace = attachment.Ripper["Jumpscare Face"]
+        staticParticle.TimeScale = 0
+        face.Enabled = false
+        jumpscareFace.Enabled = true
+        local emitAmount = math.max(
+            1,
+            math.floor(jumpscareFace.Rate)
+        )
+        jumpscareFace:Emit(emitAmount)
+        task.wait()
+        jumpscareFace.TimeScale = 0
+        local jumpscareAsset = getcustomasset(
+            "Assets/Ripper Jumpscare.mp3",
+            true
+        )
+        local jumpscareSound = model.Jumpscare
+        jumpscareSound.SoundId = jumpscareAsset
+        task.wait(1)
+        jumpscareSound:Play()
+        local staticSound = model.Static
+        staticSound.Volume = 0
+        staticSound:Play()
+        local fadeIn = TweenService:Create(
+            staticSound,
+            TweenInfo.new(1, Enum.EasingStyle.Linear),
+            {
+                Volume = 10
+            }
+        )
+        fadeIn:Play()
+        fadeIn.Completed:Wait()
+        task.wait(1)
+        local fadeOut = TweenService:Create(
+            staticSound,
+            TweenInfo.new(0.5, Enum.EasingStyle.Linear),
+            {
+                Volume = 0
+            }
+        )
+        fadeOut:Play()
+        DamagePlayer(entity)
+        fadeOut.Completed:Wait()
+        RestoreSounds()
+        entity:JumpscareDespawn()
+    end
 	},
 	Crucifixion = {
 		Type = "Guiding", -- "Guiding"
@@ -142,11 +266,13 @@ entity:SetCallback("OnDespawning", function()
 end)
 
 entity:SetCallback("OnDespawned", function()
+    RestoreSounds()
 	print("Entity has despawned")
 end)
 
 entity:SetCallback("OnDamagePlayer", function(newHealth: number)
 	if newHealth <= 0 then
+        RestoreSounds()
 		print("Entity has killed the player")
 	else
 		print("Entity has damaged the player")
