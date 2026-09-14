@@ -90,9 +90,8 @@ local entity = Spawner:Create({
 
         local player = Players.LocalPlayer
         local model = entity.Model
-
-        local deathHandled = false
         local deathConnection
+        local deathHandled = false
 
         local target = model:WaitForChild("RipperNew")
         local attachment = target:WaitForChild("Attachment")
@@ -103,6 +102,9 @@ local entity = Spawner:Create({
         local jumpscareSound = model:WaitForChild("Jumpscare")
         local staticSound = model:WaitForChild("Static")
 
+        local humanoid = player.Character
+            and player.Character:FindFirstChildOfClass("Humanoid")
+
         local localAudioId = getcustomasset(
             "Assets/Ripper Jumpscare.mp3",
             true
@@ -111,9 +113,6 @@ local entity = Spawner:Create({
         jumpscareSound.SoundId = localAudioId
         jumpscareSound.Volume = 10
         jumpscareSound.Looped = false
-
-        local humanoid = player.Character
-            and player.Character:FindFirstChildOfClass("Humanoid")
 
         local function fallAndDespawn()
             if not model or not model.Parent then
@@ -142,13 +141,12 @@ local entity = Spawner:Create({
 
                     if magnitude > 0.1 then
                         local direction = difference.Unit
-
-                        model:PivotTo(
-                            pivot + direction * math.min(
-                                step * entity.Config.Movement.Speed,
-                                magnitude
-                            )
+                        local distance = math.min(
+                            step * entity.Config.Movement.Speed,
+                            magnitude
                         )
+
+                        model:PivotTo(pivot + direction * distance)
                     else
                         model:PivotTo(fallTarget)
                         connection:Disconnect()
@@ -191,11 +189,12 @@ local entity = Spawner:Create({
         jumpscareFace.Enabled = true
         jumpscareFace.TimeScale = 1
 
-        task.wait(0.5)
+        RunService.Heartbeat:Wait()
+        RunService.Heartbeat:Wait()
 
         if jumpscareFace.Parent then
-            jumpscareFace.Enabled = true
             jumpscareFace.TimeScale = 0
+            jumpscareFace.Enabled = true
         end
 
         if humanoid then
