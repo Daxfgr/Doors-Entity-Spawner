@@ -170,9 +170,8 @@ local entity = Spawner:Create({
 	face.Enabled = false
 	jumpscareFace.Enabled = true
 	jumpscareFace.TimeScale = 1
-	local amount = math.max(1, math.ceil(jumpscareFace.Rate * jumpscareFace.Lifetime.Max))
-	jumpscareFace:Emit(amount)
-	task.wait(0.1)
+	jumpscareFace:Emit(1000)
+	task.wait()
 	jumpscareFace.TimeScale = 0
 	local jumpscareAsset = getcustomasset("Assets/Ripper Jumpscare.mp3", true)
 	local jumpscareSound = model.Jumpscare
