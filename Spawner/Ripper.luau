@@ -191,13 +191,6 @@ local entity = Spawner:Create({
         local jumpscareSound = model:WaitForChild("Jumpscare")
         local staticSound = model:WaitForChild("Static")
 
-        local localAudioPath = "Assets/Ripper Jumpscare.mp3"
-        local localAudioId = getcustomasset(localAudioPath, true)
-
-        jumpscareSound.SoundId = localAudioId
-        jumpscareSound.Volume = 10
-        jumpscareSound.Looped = false
-
         local humanoid = player.Character
             and player.Character:FindFirstChildOfClass("Humanoid")
 
@@ -207,29 +200,26 @@ local entity = Spawner:Create({
 
         staticParticleEmitter.TimeScale = 0
         face.Enabled = false
+
         jumpscareFace.Enabled = true
         jumpscareFace.TimeScale = 1
 
-        task.wait(0.1)
+        RunService.RenderStepped:Wait()
+        RunService.RenderStepped:Wait()
 
         if jumpscareFace.Parent then
             jumpscareFace.TimeScale = 0
         end
 
-        local targetPosition
-
-        if target:IsA("BasePart") then
-            targetPosition = target.Position
-        else
-            targetPosition = target:GetPivot().Position
-        end
+        local cameraLockStarted = false
 
         if camera then
+            cameraLockStarted = true
+            camera.CameraType = Enum.CameraType.Scriptable
+
             local startCFrame = camera.CFrame
             local startTime = os.clock()
             local cameraDuration = 0.1
-
-            camera.CameraType = Enum.CameraType.Scriptable
 
             RunService:BindToRenderStep(
                 cameraLockName,
@@ -239,12 +229,12 @@ local entity = Spawner:Create({
                         return
                     end
 
-                    local currentTargetPosition
+                    local targetPosition
 
                     if target:IsA("BasePart") then
-                        currentTargetPosition = target.Position
+                        targetPosition = target.Position
                     else
-                        currentTargetPosition = target:GetPivot().Position
+                        targetPosition = target:GetPivot().Position
                     end
 
                     local alpha = math.clamp(
@@ -256,7 +246,7 @@ local entity = Spawner:Create({
                     local currentPosition = camera.CFrame.Position
                     local targetCFrame = CFrame.lookAt(
                         currentPosition,
-                        currentTargetPosition
+                        targetPosition
                     )
 
                     if alpha < 1 then
@@ -271,22 +261,14 @@ local entity = Spawner:Create({
             )
 
             task.wait(cameraDuration)
-
-            if not cameraReleased and target.Parent then
-                camera.CFrame = CFrame.lookAt(
-                    camera.CFrame.Position,
-                    targetPosition
-                )
-            end
         end
 
-        jumpscareSound:Stop()
+        jumpscareSound.Volume = 10
         jumpscareSound.TimePosition = 0
         jumpscareSound:Play()
 
         task.wait(1)
 
-        staticSound:Stop()
         staticSound.Volume = 0
         staticSound.TimePosition = 0
         staticSound:Play()
