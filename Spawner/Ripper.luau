@@ -124,7 +124,7 @@ local entity = Spawner:Create({
 
                 RunService:UnbindFromRenderStep(cameraLockName)
 
-                camera.CameraType = Enum.CameraType.Custom
+                camera.CameraType = Enum.CameraType.Scriptable
                 camera.CFrame = currentCFrame
             end
         end
@@ -209,10 +209,7 @@ local entity = Spawner:Create({
             end
         end)
 
-        local cameraLockStarted = false
-
         if camera then
-            cameraLockStarted = true
             camera.CameraType = Enum.CameraType.Scriptable
 
             local startCFrame = camera.CFrame
@@ -329,7 +326,6 @@ local entity = Spawner:Create({
         end
 
         staticSound.Volume = 0
-        staticSound:Stop()
 
         if humanoid then
             if humanoid.Health > 0 then
@@ -338,9 +334,7 @@ local entity = Spawner:Create({
 
             handleDeath()
         else
-            releaseCamera()
-            resumeSounds()
-            fallAndDespawn()
+            handleDeath()
         end
     end)
 end
