@@ -263,9 +263,12 @@ local entity = Spawner:Create({
 	)
 
 	fadeOut:Play()
-	fadeOut.Completed:Wait()
+    fadeOut.Completed:Wait()
 
-	jumpscareFace.RotSpeed = originalRotSpeed
+    staticSound.Volume = 0
+    DamagePlayer(entity)
+
+    jumpscareFace.RotSpeed = originalRotSpeed
 
 	if controls then
 		controls:Enable()
