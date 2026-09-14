@@ -106,115 +106,118 @@ local entity = Spawner:Create({
 			IgnoreHiding = false -- "true" -- "false"
 		},
 		Action = function(entity, DamagePlayer)
-            task.spawn(function()
-                local RunService = game:GetService("RunService")
-                local model = entity.Model
+    task.spawn(function()
+        local RunService = game:GetService("RunService")
 
-                local target = model:WaitForChild("RipperNew")
-                local attachment = target:WaitForChild("Attachment")
+        local model = entity.Model
 
-                local staticParticleEmitter = attachment.Static:WaitForChild(
-                    "ParticleEmitter"
-                )
+        local target = model:WaitForChild("RipperNew")
+        local attachment = target:WaitForChild("Attachment")
 
-                local ripper = attachment:WaitForChild("Ripper")
-                local face = ripper:WaitForChild("Face")
-                local jumpscareFace = ripper:WaitForChild("Jumpscare Face")
+        local staticParticleEmitter = attachment.Static:WaitForChild(
+            "ParticleEmitter"
+        )
 
-                local jumpscareSound = model:WaitForChild("Jumpscare")
-                local staticSound = model:WaitForChild("Static")
+        local ripper = attachment:WaitForChild("Ripper")
+        local face = ripper:WaitForChild("Face")
+        local jumpscareFace = ripper:WaitForChild("Jumpscare Face")
 
-                local localAudioId = getcustomasset(
-                    "Assets/Ripper Jumpscare.mp3",
-                    true
-                )
+        local jumpscareSound = model:WaitForChild("Jumpscare")
+        local staticSound = model:WaitForChild("Static")
 
-                jumpscareSound.SoundId = localAudioId
-                jumpscareSound.Volume = 10
-                jumpscareSound.Looped = false
+        local localAudioId = getcustomasset(
+            "Assets/Ripper Jumpscare.mp3",
+            true
+        )
 
-                model.Missing:Stop()
-                entity:Pause()
+        jumpscareSound.SoundId = localAudioId
+        jumpscareSound.Volume = 10
+        jumpscareSound.Looped = false
 
-                staticParticleEmitter.TimeScale = 0
+        model.Missing:Stop()
+        entity:Pause()
 
-                face.Enabled = false
+        staticParticleEmitter.TimeScale = 0
 
-                jumpscareFace.Enabled = false
-                jumpscareFace:Clear()
-                jumpscareFace.TimeScale = 1
+        face.Enabled = false
 
-                local maximumParticles = jumpscareFace.MaxParticles
+        jumpscareFace:Clear()
+        jumpscareFace.Enabled = false
+        jumpscareFace.TimeScale = 1
 
-                if maximumParticles <= 0 then
-                    maximumParticles = math.ceil(
-                        jumpscareFace.Rate
-                            * jumpscareFace.Lifetime.Max
-                    )
-                end
+        local particleRate = jumpscareFace.Rate
+        local particleLifetime = jumpscareFace.Lifetime.Max
 
-                jumpscareFace:Emit(maximumParticles)
+        local particleAmount = math.ceil(
+            particleRate * particleLifetime
+        )
 
-                RunService.PreRender:Wait()
-
-                jumpscareFace.Enabled = true
-                jumpscareFace.TimeScale = 0
-
-                jumpscareSound.TimePosition = 0
-                jumpscareSound:Play()
-
-                task.wait(1)
-
-                staticSound.Volume = 0
-                staticSound.TimePosition = 0
-                staticSound:Play()
-
-                local fadeInStart = os.clock()
-
-                while true do
-                    local alpha = math.clamp(
-                        (os.clock() - fadeInStart) / 1,
-                        0,
-                        1
-                    )
-
-                    staticSound.Volume = 10 * alpha
-
-                    if alpha >= 1 then
-                        break
-                    end
-
-                    RunService.Heartbeat:Wait()
-                end
-
-                task.wait(1)
-
-                DamagePlayer(entity)
-
-                local fadeOutStart = os.clock()
-                local fadeOutDuration = 0.5
-
-                while true do
-                    local alpha = math.clamp(
-                        (os.clock() - fadeOutStart) / fadeOutDuration,
-                        0,
-                        1
-                    )
-
-                    staticSound.Volume = 10 * (1 - alpha)
-
-                    if alpha >= 1 then
-                        break
-                    end
-
-                    RunService.Heartbeat:Wait()
-                end
-
-                staticSound.Volume = 0
-
-                entity:Fall()
-            end)
+        if particleAmount < 1 then
+            particleAmount = 1
         end
+
+        jumpscareFace:Emit(particleAmount)
+
+        RunService.PreRender:Wait()
+
+        jumpscareFace.Enabled = true
+        jumpscareFace.TimeScale = 0
+
+        jumpscareSound.TimePosition = 0
+        jumpscareSound:Play()
+
+        task.wait(1)
+
+        staticSound.Volume = 0
+        staticSound.TimePosition = 0
+        staticSound:Play()
+
+        local fadeInStart = os.clock()
+
+        while true do
+            local alpha = math.clamp(
+                (os.clock() - fadeInStart) / 1,
+                0,
+                1
+            )
+
+            staticSound.Volume = 10 * alpha
+
+            if alpha >= 1 then
+                break
+            end
+
+            RunService.Heartbeat:Wait()
+        end
+
+        task.wait(1)
+
+        DamagePlayer(entity)
+
+        local fadeOutStart = os.clock()
+        local fadeOutDuration = 0.5
+
+        while true do
+            local alpha = math.clamp(
+                (os.clock() - fadeOutStart) / fadeOutDuration,
+                0,
+                1
+            )
+
+            staticSound.Volume = 10 * (1 - alpha)
+
+            if alpha >= 1 then
+                break
+            end
+
+            RunService.Heartbeat:Wait()
+        end
+
+        staticSound.Volume = 0
+
+        entity:Fall()
+    end)
+end
 	},
 	Crucifixion = {
 		Type = "Guiding", -- "Guiding"
