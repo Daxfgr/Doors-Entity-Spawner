@@ -90,6 +90,7 @@ local entity = Spawner:Create({
 
         local player = Players.LocalPlayer
         local model = entity.Model
+
         local deathHandled = false
         local deathConnection
 
@@ -137,10 +138,11 @@ local entity = Spawner:Create({
                 if not model:GetAttribute("Paused") then
                     local pivot = model:GetPivot()
                     local difference = fallTarget.Position - pivot.Position
-                    local direction = difference.Unit
                     local magnitude = difference.Magnitude
 
                     if magnitude > 0.1 then
+                        local direction = difference.Unit
+
                         model:PivotTo(
                             pivot + direction * math.min(
                                 step * entity.Config.Movement.Speed,
@@ -148,6 +150,7 @@ local entity = Spawner:Create({
                             )
                         )
                     else
+                        model:PivotTo(fallTarget)
                         connection:Disconnect()
                         reached = true
                     end
@@ -184,8 +187,16 @@ local entity = Spawner:Create({
         staticParticleEmitter.TimeScale = 0
 
         face.Enabled = false
+
         jumpscareFace.Enabled = true
-        jumpscareFace.TimeScale = 0
+        jumpscareFace.TimeScale = 1
+
+        task.wait(0.5)
+
+        if jumpscareFace.Parent then
+            jumpscareFace.Enabled = true
+            jumpscareFace.TimeScale = 0
+        end
 
         if humanoid then
             deathConnection = humanoid.Died:Connect(handleDeath)
@@ -218,7 +229,7 @@ local entity = Spawner:Create({
             RunService.Heartbeat:Wait()
         end
 
-        task.wait(1)
+        task.wait(2)
 
         DamagePlayer(entity)
 
