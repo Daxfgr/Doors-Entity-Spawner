@@ -32,51 +32,6 @@ source = replaceOnce(
             end)]]
 )
 
-source = replaceOnce(
-    source,
-    [[Despawn = function(self)
-            if self:IsAlive() then
-                self.Model:Destroy()
-                local i = table.find(Module.ActiveEntities, self)
-                if i then
-                    table.remove(Module.ActiveEntities, i)
-                end
-                task.spawn(self.RunCallback, self, "OnDespawned")
-            end
-        end]],
-    [[Despawn = function(self)
-            if self:IsAlive() then
-                self.Model:Destroy()
-                local i = table.find(Module.ActiveEntities, self)
-                if i then
-                    table.remove(Module.ActiveEntities, i)
-                end
-                task.spawn(self.RunCallback, self, "OnDespawned")
-            end
-        end,
-        JumpscareDespawn = function(self)
-            if not self:IsAlive() then
-                return
-            end
-
-            local model = self.Model
-            local config = self.Config
-
-            model:SetAttribute("Despawning", true)
-            model:SetAttribute("Paused", false)
-
-            task.spawn(self.RunCallback, self, "OnDespawning")
-
-            EntityMoveTo(
-                model,
-                model:GetPivot() - Vector3.new(0, 300, 0),
-                config.Movement.Speed
-            )
-
-            self:Despawn()
-        end]]
-)
-
 local Spawner = loadstring(source)()
 
 local TweenService = game:GetService("TweenService")
@@ -182,7 +137,6 @@ local entity = Spawner:Create({
 	local originalCameraType
 	local originalCameraSubject
 	local blockGui
-	local deathConnection
 
 	if LocalPlayer then
 		local PlayerModule = LocalPlayer.PlayerScripts:FindFirstChild("PlayerModule")
@@ -219,28 +173,6 @@ local entity = Spawner:Create({
 			block.Parent = blockGui
 
 			blockGui.Parent = playerGui
-		end
-
-		local character = LocalPlayer.Character
-		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-
-		if humanoid then
-			deathConnection = humanoid.Died:Connect(function()
-				if deathConnection then
-					deathConnection:Disconnect()
-					deathConnection = nil
-				end
-
-				if blockGui then
-					blockGui:Destroy()
-					blockGui = nil
-				end
-
-				if controls then
-					controls:Enable()
-					controls = nil
-				end
-			end)
 		end
 	end
 
@@ -286,17 +218,24 @@ local entity = Spawner:Create({
 	)
 
 	fadeOut:Play()
+
 	DamagePlayer(entity)
-	fadeOut.Completed:Wait()
 
-	staticSound.Volume = 0
-
-	jumpscareFace.RotSpeed = originalRotSpeed
+	if blockGui then
+		blockGui:Destroy()
+		blockGui = nil
+	end
 
 	if controls then
 		controls:Enable()
 		controls = nil
 	end
+
+	fadeOut.Completed:Wait()
+
+	staticSound.Volume = 0
+
+	jumpscareFace.RotSpeed = originalRotSpeed
 
 	if LocalPlayer then
 		local camera = workspace.CurrentCamera
@@ -308,10 +247,6 @@ local entity = Spawner:Create({
 	end
 
 	RestoreSounds()
-
-	if entity:IsAlive() then
-		entity:JumpscareDespawn()
-	end
 end
 	},
 	Crucifixion = {
