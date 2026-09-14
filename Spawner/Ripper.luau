@@ -20,16 +20,39 @@ source = replaceOnce(
     source,
     "Modules.Module_Events.flicker(currentRoom, config.Lights.Flicker.Duration)",
     [[task.delay(1, function()
-            Modules.Module_Events.flicker(currentRoom, config.Lights.Flicker.Duration)
-        end)]]
+        Modules.Module_Events.flicker(currentRoom, config.Lights.Flicker.Duration)
+    end)]]
 )
 
 source = replaceOnce(
     source,
     "task.spawn(Earthquake)",
     [[task.delay(1, function()
-                task.spawn(Earthquake)
-            end)]]
+        task.spawn(Earthquake)
+    end)]]
+)
+
+local fallMethod = [[
+        Fall = function(self)
+            if self:IsAlive() then
+                self:Resume()
+
+                EntityMoveTo(
+                    self.Model,
+                    self.Model:GetPivot() - Vector3.new(0, 300, 0),
+                    self.Config.Movement.Speed
+                )
+
+                self:Despawn()
+            end
+        end,
+
+]]
+
+source = replaceOnce(
+    source,
+    "        Despawn = function(self)",
+    fallMethod .. "        Despawn = function(self)"
 )
 
 local Spawner = loadstring(source)()
@@ -83,162 +106,115 @@ local entity = Spawner:Create({
 			IgnoreHiding = false -- "true" -- "false"
 		},
 		Action = function(entity, DamagePlayer)
-    task.spawn(function()
-        local RunService = game:GetService("RunService")
+            task.spawn(function()
+                local RunService = game:GetService("RunService")
+                local model = entity.Model
 
-        local model = entity.Model
+                local target = model:WaitForChild("RipperNew")
+                local attachment = target:WaitForChild("Attachment")
 
-        local target = model:WaitForChild("RipperNew")
-        local attachment = target:WaitForChild("Attachment")
+                local staticParticleEmitter = attachment.Static:WaitForChild(
+                    "ParticleEmitter"
+                )
 
-        local staticParticleEmitter = attachment.Static:WaitForChild(
-            "ParticleEmitter"
-        )
+                local ripper = attachment:WaitForChild("Ripper")
+                local face = ripper:WaitForChild("Face")
+                local jumpscareFace = ripper:WaitForChild("Jumpscare Face")
 
-        local ripper = attachment:WaitForChild("Ripper")
-        local face = ripper:WaitForChild("Face")
-        local jumpscareFace = ripper:WaitForChild("Jumpscare Face")
+                local jumpscareSound = model:WaitForChild("Jumpscare")
+                local staticSound = model:WaitForChild("Static")
 
-        local jumpscareSound = model:WaitForChild("Jumpscare")
-        local staticSound = model:WaitForChild("Static")
+                local localAudioId = getcustomasset(
+                    "Assets/Ripper Jumpscare.mp3",
+                    true
+                )
 
-        local localAudioId = getcustomasset(
-            "Assets/Ripper Jumpscare.mp3",
-            true
-        )
+                jumpscareSound.SoundId = localAudioId
+                jumpscareSound.Volume = 10
+                jumpscareSound.Looped = false
 
-        jumpscareSound.SoundId = localAudioId
-        jumpscareSound.Volume = 10
-        jumpscareSound.Looped = false
+                model.Missing:Stop()
+                entity:Pause()
 
-        model.Missing:Stop()
-        entity:Pause()
+                staticParticleEmitter.TimeScale = 0
 
-        staticParticleEmitter.TimeScale = 0
+                face.Enabled = false
 
-        face.Enabled = false
+                jumpscareFace.Enabled = false
+                jumpscareFace:Clear()
+                jumpscareFace.TimeScale = 1
 
-        jumpscareFace.Enabled = false
-        jumpscareFace:Clear()
-        jumpscareFace.TimeScale = 1
+                local maximumParticles = jumpscareFace.MaxParticles
 
-        local maximumLifetime = jumpscareFace.Lifetime.Max
-        local emissionRate = jumpscareFace.Rate
-
-        local particleAmount = math.max(
-            100,
-            math.ceil(emissionRate * maximumLifetime * 2)
-        )
-
-        jumpscareFace:Emit(particleAmount)
-
-        RunService.PreRender:Wait()
-
-        jumpscareFace.Enabled = true
-        jumpscareFace.TimeScale = 0
-
-        jumpscareSound.TimePosition = 0
-        jumpscareSound:Play()
-
-        task.wait(1)
-
-        staticSound.Volume = 0
-        staticSound.TimePosition = 0
-        staticSound:Play()
-
-        local fadeInStart = os.clock()
-
-        while true do
-            local alpha = math.clamp(
-                (os.clock() - fadeInStart) / 1,
-                0,
-                1
-            )
-
-            staticSound.Volume = 10 * alpha
-
-            if alpha >= 1 then
-                break
-            end
-
-            RunService.Heartbeat:Wait()
-        end
-
-        task.wait(1)
-
-        DamagePlayer(entity)
-
-        local fadeOutStart = os.clock()
-        local fadeOutDuration = 0.5
-
-        while true do
-            local alpha = math.clamp(
-                (os.clock() - fadeOutStart) / fadeOutDuration,
-                0,
-                1
-            )
-
-            staticSound.Volume = 10 * (1 - alpha)
-
-            if alpha >= 1 then
-                break
-            end
-
-            RunService.Heartbeat:Wait()
-        end
-
-        staticSound.Volume = 0
-
-        entity:Resume()
-
-        local fallTarget = model:GetPivot()
-            - Vector3.new(0, 300, 0)
-
-        local reached = false
-        local connection
-
-        connection = RunService.Stepped:Connect(function(_, step)
-            if not model.Parent then
-                connection:Disconnect()
-                reached = true
-                return
-            end
-
-            if not model:GetAttribute("Paused") then
-                local pivot = model:GetPivot()
-                local difference = fallTarget.Position - pivot.Position
-                local magnitude = difference.Magnitude
-
-                if magnitude > 0.1 then
-                    local direction = difference.Unit
-
-                    model:PivotTo(
-                        pivot + direction * math.min(
-                            step * entity.Config.Movement.Speed,
-                            magnitude
-                        )
+                if maximumParticles <= 0 then
+                    maximumParticles = math.ceil(
+                        jumpscareFace.Rate
+                            * jumpscareFace.Lifetime.Max
                     )
-                else
-                    model:PivotTo(fallTarget)
-                    connection:Disconnect()
-                    reached = true
                 end
-            end
-        end)
 
-        repeat
-            RunService.Stepped:Wait()
-        until reached or not model.Parent
+                jumpscareFace:Emit(maximumParticles)
 
-        if connection then
-            connection:Disconnect()
+                RunService.PreRender:Wait()
+
+                jumpscareFace.Enabled = true
+                jumpscareFace.TimeScale = 0
+
+                jumpscareSound.TimePosition = 0
+                jumpscareSound:Play()
+
+                task.wait(1)
+
+                staticSound.Volume = 0
+                staticSound.TimePosition = 0
+                staticSound:Play()
+
+                local fadeInStart = os.clock()
+
+                while true do
+                    local alpha = math.clamp(
+                        (os.clock() - fadeInStart) / 1,
+                        0,
+                        1
+                    )
+
+                    staticSound.Volume = 10 * alpha
+
+                    if alpha >= 1 then
+                        break
+                    end
+
+                    RunService.Heartbeat:Wait()
+                end
+
+                task.wait(1)
+
+                DamagePlayer(entity)
+
+                local fadeOutStart = os.clock()
+                local fadeOutDuration = 0.5
+
+                while true do
+                    local alpha = math.clamp(
+                        (os.clock() - fadeOutStart) / fadeOutDuration,
+                        0,
+                        1
+                    )
+
+                    staticSound.Volume = 10 * (1 - alpha)
+
+                    if alpha >= 1 then
+                        break
+                    end
+
+                    RunService.Heartbeat:Wait()
+                end
+
+                staticSound.Volume = 0
+
+                entity:Fall()
+            end)
         end
-
-        if model.Parent then
-            entity:Despawn()
-        end
-    end)
-end
 	},
 	Crucifixion = {
 		Type = "Guiding", -- "Guiding"
