@@ -85,6 +85,23 @@ local entity = Spawner:Create({
 
 		Action = function(entity, DamagePlayer)
             task.spawn(function()
+                local pausedSounds = {}
+
+                for _, object in ipairs(game:GetDescendants()) do
+                    if object:IsA("Sound") and object.Playing then
+                        table.insert(pausedSounds, object)
+                        object:Pause()
+                    end
+                end
+
+                local function resumePausedSounds()
+                    for _, sound in ipairs(pausedSounds) do
+                        if sound.Parent then
+                            sound:Resume()
+                        end
+                    end
+                end
+
                 entity.Model.Missing:Stop()
                 entity:Pause()
 
@@ -103,64 +120,118 @@ local entity = Spawner:Create({
                 face.Enabled = false
                 jumpscareFace.Enabled = true
 
-                local players = game:GetService("Players")
-                local runService = game:GetService("RunService")
-                local player = players.LocalPlayer
                 local camera = workspace.CurrentCamera
-                local targetPosition = target:IsA("BasePart") and target.Position or target:GetPivot().Position
+                local targetPosition = target:IsA("BasePart")
+                    and target.Position
+                    or target:GetPivot().Position
 
                 if camera then
                     local startCFrame = camera.CFrame
-                    local targetCFrame = CFrame.lookAt(camera.CFrame.Position, targetPosition)
+                    local targetCFrame = CFrame.lookAt(
+                        camera.CFrame.Position,
+                        targetPosition
+                    )
                     local startTime = os.clock()
 
                     while true do
-                        local alpha = math.clamp((os.clock() - startTime) / 1, 0, 1)
-                        camera.CFrame = startCFrame:Lerp(targetCFrame, alpha)
+                        local alpha = math.clamp(
+                            (os.clock() - startTime) / 1,
+                            0,
+                            1
+                        )
+
+                        camera.CFrame = startCFrame:Lerp(
+                            targetCFrame,
+                            alpha
+                        )
 
                         if alpha >= 1 then
                             break
                         end
 
-                        runService.RenderStepped:Wait()
+                        game:GetService("RunService").RenderStepped:Wait()
                     end
                 end
 
                 jumpscareSound:Play()
+
                 task.wait(1)
 
                 staticSound.Volume = 0
                 staticSound:Play()
 
                 local fadeInStart = os.clock()
+
                 while true do
-                    local alpha = math.clamp((os.clock() - fadeInStart) / 1, 0, 1)
+                    local alpha = math.clamp(
+                        (os.clock() - fadeInStart) / 1,
+                        0,
+                        1
+                    )
+
                     staticSound.Volume = 10 * alpha
 
                     if alpha >= 1 then
                         break
                     end
 
-                    runService.Heartbeat:Wait()
+                    game:GetService("RunService").Heartbeat:Wait()
                 end
 
                 task.wait(2)
 
                 local fadeOutStart = os.clock()
+
                 while true do
-                    local alpha = math.clamp((os.clock() - fadeOutStart) / 1, 0, 1)
+                    local alpha = math.clamp(
+                        (os.clock() - fadeOutStart) / 1,
+                        0,
+                        1
+                    )
+
                     staticSound.Volume = 10 * (1 - alpha)
 
                     if alpha >= 1 then
                         break
                     end
 
-                    runService.Heartbeat:Wait()
+                    game:GetService("RunService").Heartbeat:Wait()
                 end
 
                 staticSound.Volume = 0
+
                 entity:Fall()
-                DamagePlayer(entity)
+
+                local player = game:GetService("Players").LocalPlayer
+                local humanoid = player.Character
+                    and player.Character:FindFirstChildOfClass("Humanoid")
+
+                if humanoid then
+                    local deathConnection
+
+                    deathConnection = humanoid.Died:Connect(function()
+                        resumePausedSounds()
+
+                        if deathConnection then
+                            deathConnection:Disconnect()
+                            deathConnection = nil
+                        end
+                    end)
+
+                    DamagePlayer(entity)
+
+                    if humanoid.Health <= 0 then
+                        resumePausedSounds()
+
+                        if deathConnection then
+                            deathConnection:Disconnect()
+                            deathConnection = nil
+                        end
+                    end
+                else
+                    DamagePlayer(entity)
+                    resumePausedSounds()
+                end
             end)
         end
 	},
