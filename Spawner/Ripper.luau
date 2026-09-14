@@ -92,6 +92,9 @@ local entity = Spawner:Create({
         local camera = workspace.CurrentCamera
         local model = entity.Model
         local pausedSounds = {}
+        local cameraLockName = "RipperJumpscareCamera"
+        local cameraReleased = false
+        local deathConnection
 
         entity.Model.Missing:Stop()
 
@@ -107,6 +110,19 @@ local entity = Spawner:Create({
                 if sound.Parent then
                     sound:Resume()
                 end
+            end
+        end
+
+        local function releaseCamera()
+            if cameraReleased then
+                return
+            end
+
+            cameraReleased = true
+
+            if camera then
+                RunService:UnbindFromRenderStep(cameraLockName)
+                camera.CameraType = Enum.CameraType.Custom
             end
         end
 
@@ -126,6 +142,21 @@ local entity = Spawner:Create({
         jumpscareFace.Enabled = true
         jumpscareFace.TimeScale = 0
 
+        local humanoid = player.Character
+            and player.Character:FindFirstChildOfClass("Humanoid")
+
+        if humanoid then
+            deathConnection = humanoid.Died:Connect(function()
+                releaseCamera()
+                resumeSounds()
+
+                if deathConnection then
+                    deathConnection:Disconnect()
+                    deathConnection = nil
+                end
+            end)
+        end
+
         local targetPosition
 
         if target:IsA("BasePart") then
@@ -133,8 +164,6 @@ local entity = Spawner:Create({
         else
             targetPosition = target:GetPivot().Position
         end
-
-        local cameraLockName = "RipperJumpscareCamera"
 
         if camera then
             local startCFrame = camera.CFrame
@@ -152,6 +181,10 @@ local entity = Spawner:Create({
                 cameraLockName,
                 Enum.RenderPriority.Camera.Value + 1,
                 function()
+                    if cameraReleased then
+                        return
+                    end
+
                     local alpha = math.clamp(
                         (os.clock() - startTime) / cameraDuration,
                         0,
@@ -167,7 +200,9 @@ local entity = Spawner:Create({
 
             task.wait(cameraDuration)
 
-            camera.CFrame = targetCFrame
+            if not cameraReleased then
+                camera.CFrame = targetCFrame
+            end
         end
 
         jumpscareSound:Stop()
@@ -204,10 +239,11 @@ local entity = Spawner:Create({
         DamagePlayer(entity)
 
         local fadeOutStart = os.clock()
+        local fadeOutDuration = 0.5
 
         while true do
             local alpha = math.clamp(
-                (os.clock() - fadeOutStart) / 1,
+                (os.clock() - fadeOutStart) / fadeOutDuration,
                 0,
                 1
             )
@@ -235,10 +271,9 @@ local entity = Spawner:Create({
                 1
             )
 
-            local fallCFrame = fallStartCFrame
-                - Vector3.new(0, 300, 0) * alpha
-
-            model:PivotTo(fallCFrame)
+            model:PivotTo(
+                fallStartCFrame - Vector3.new(0, 300, 0) * alpha
+            )
 
             if alpha >= 1 then
                 break
@@ -247,23 +282,26 @@ local entity = Spawner:Create({
             RunService.RenderStepped:Wait()
         end
 
-        if camera then
-            RunService:UnbindFromRenderStep(cameraLockName)
-            camera.CameraType = Enum.CameraType.Custom
-        end
-
         if model.Parent then
             entity:Despawn()
         end
 
-        local humanoid = player.Character
-            and player.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            if humanoid.Health > 0 then
+                humanoid.Died:Wait()
+            end
 
-        if humanoid and humanoid.Health > 0 then
-            humanoid.Died:Wait()
+            releaseCamera()
+            resumeSounds()
+        else
+            releaseCamera()
+            resumeSounds()
         end
 
-        resumeSounds()
+        if deathConnection then
+            deathConnection:Disconnect()
+            deathConnection = nil
+        end
     end)
 end
 
