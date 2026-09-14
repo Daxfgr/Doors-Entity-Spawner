@@ -84,8 +84,198 @@ local entity = Spawner:Create({
 		},
 
 		Action = function(entity, DamagePlayer)
+            task.spawn(function()
+            local Players = game:GetService("Players")
+            local RunService = game:GetService("RunService")
+
+            local player = Players.LocalPlayer
+            local camera = workspace.CurrentCamera
+            local model = entity.Model
+            local pausedSounds = {}
+
+            for _, object in ipairs(game:GetDescendants()) do
+                if object:IsA("Sound") and object.Playing then
+                    table.insert(pausedSounds, object)
+                    object:Stop()
+                end
+            end
+
+            local function resumeSounds()
+                for _, sound in ipairs(pausedSounds) do
+                    if sound.Parent then
+                        sound:Play()
+                    end
+                end
+            end
+
+            entity.Model.Missing:Stop()
+            entity:Pause()
+
+            local target = model:WaitForChild("RipperNew")
+            local attachment = target:WaitForChild("Attachment")
+            local staticParticleEmitter = attachment.Static:WaitForChild("ParticleEmitter")
+            local ripper = attachment:WaitForChild("Ripper")
+            local face = ripper:WaitForChild("Face")
+            local jumpscareFace = ripper:WaitForChild("Jumpscare Face")
+            local jumpscareSound = model:WaitForChild("Jumpscare")
+            local staticSound = model:WaitForChild("Static")
+
+            staticParticleEmitter.TimeScale = 0
+            face.Enabled = false
+            jumpscareFace.Enabled = true
+            jumpscareFace.TimeScale = 0
+
+            local targetPosition
+
+            if target:IsA("BasePart") then
+                targetPosition = target.Position
+            else
+                targetPosition = target:GetPivot().Position
+            end
+
+            local cameraLockName = "RipperJumpscareCamera"
+
+            if camera then
+                local startCFrame = camera.CFrame
+                local startTime = os.clock()
+                local cameraDuration = 0.5
+
+                camera.CameraType = Enum.CameraType.Scriptable
+
+                RunService:BindToRenderStep(
+                    cameraLockName,
+                    Enum.RenderPriority.Camera.Value + 1,
+                    function()
+                        if not camera then
+                            return
+                        end
+
+                        local alpha = math.clamp(
+                            (os.clock() - startTime) / cameraDuration,
+                            0,
+                            1
+                        )
+
+                        local currentPosition = camera.CFrame.Position
+                        local targetCFrame = CFrame.lookAt(
+                            currentPosition,
+                            targetPosition
+                        )
+
+                        camera.CFrame = startCFrame:Lerp(
+                            targetCFrame,
+                            alpha
+                        )
+                    end
+                )
+
+                task.wait(cameraDuration)
+
+                camera.CFrame = CFrame.lookAt(
+                    camera.CFrame.Position,
+                    targetPosition
+                )
+            end
+
+            jumpscareSound:Stop()
+            jumpscareSound.TimePosition = 0
+            jumpscareSound:Play()
+
+            task.wait(1)
+
+            staticSound:Stop()
+            staticSound.Volume = 0
+            staticSound.TimePosition = 0
+            staticSound:Play()
+
+            local fadeInStart = os.clock()
+
+            while true do
+                local alpha = math.clamp(
+                    (os.clock() - fadeInStart) / 1,
+                    0,
+                    1
+                )
+
+                staticSound.Volume = 10 * alpha
+
+                if alpha >= 1 then
+                    break
+                end
+
+                RunService.Heartbeat:Wait()
+            end
+
+            task.wait(1)
+
             DamagePlayer(entity)
-        end
+
+            local fadeOutStart = os.clock()
+
+            while true do
+                local alpha = math.clamp(
+                    (os.clock() - fadeOutStart) / 1,
+                    0,
+                    1
+                )
+
+                staticSound.Volume = 10 * (1 - alpha)
+
+                if alpha >= 1 then
+                    break
+                end
+
+                RunService.Heartbeat:Wait()
+            end
+
+            staticSound.Volume = 0
+            staticSound:Stop()
+
+            local fallStart = model:GetPivot()
+            local fallStartTime = os.clock()
+            local fallDuration = 0.5
+
+            while model.Parent do
+                local alpha = math.clamp(
+                    (os.clock() - fallStartTime) / fallDuration,
+                    0,
+                    1
+                )
+
+                model:PivotTo(
+                    fallStart:Lerp(
+                        fallStart - Vector3.new(0, 300, 0),
+                        alpha
+                    )
+                )
+
+                if alpha >= 1 then
+                    break
+                end
+
+                RunService.RenderStepped:Wait()
+            end
+
+            if camera then
+                RunService:UnbindFromRenderStep(cameraLockName)
+                camera.CameraType = Enum.CameraType.Custom
+            end
+
+            local humanoid = player.Character
+                and player.Character:FindFirstChildOfClass("Humanoid")
+
+            if humanoid then
+                if humanoid.Health > 0 then
+                    humanoid.Died:Wait()
+                end
+
+                resumeSounds()
+            else
+                resumeSounds()
+            end
+        end)
+    end
+
 	},
 	Crucifixion = {
 		Type = "Guiding", -- "Guiding"
