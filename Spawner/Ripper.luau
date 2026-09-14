@@ -159,57 +159,41 @@ local entity = Spawner:Create({
 			IgnoreHiding = false -- "true" -- "false"
 		},
 		Action = function(entity, DamagePlayer)
-        local model = entity.Model
-        local attachment = model.RipperNew.Attachment
-        entity:Pause()
-        MuteSounds()
-        local staticParticle = attachment.Static.ParticleEmitter
-        local face = attachment.Ripper.Face
-        local jumpscareFace = attachment.Ripper["Jumpscare Face"]
-        staticParticle.TimeScale = 0
-        face.Enabled = false
-        jumpscareFace.Enabled = true
-        local emitAmount = math.max(
-            1,
-            math.floor(jumpscareFace.Rate)
-        )
-        jumpscareFace:Emit(emitAmount)
-        task.wait()
-        jumpscareFace.TimeScale = 0
-        local jumpscareAsset = getcustomasset(
-            "Assets/Ripper Jumpscare.mp3",
-            true
-        )
-        local jumpscareSound = model.Jumpscare
-        jumpscareSound.SoundId = jumpscareAsset
-        task.wait(1)
-        jumpscareSound:Play()
-        local staticSound = model.Static
-        staticSound.Volume = 0
-        staticSound:Play()
-        local fadeIn = TweenService:Create(
-            staticSound,
-            TweenInfo.new(1, Enum.EasingStyle.Linear),
-            {
-                Volume = 10
-            }
-        )
-        fadeIn:Play()
-        fadeIn.Completed:Wait()
-        task.wait(1)
-        local fadeOut = TweenService:Create(
-            staticSound,
-            TweenInfo.new(0.5, Enum.EasingStyle.Linear),
-            {
-                Volume = 0
-            }
-        )
-        fadeOut:Play()
-        DamagePlayer(entity)
-        fadeOut.Completed:Wait()
-        RestoreSounds()
-        entity:JumpscareDespawn()
-    end
+	local model = entity.Model
+	local attachment = model.RipperNew.Attachment
+	entity:Pause()
+	MuteSounds()
+	local staticParticle = attachment.Static.ParticleEmitter
+	local face = attachment.Ripper.Face
+	local jumpscareFace = attachment.Ripper["Jumpscare Face"]
+	staticParticle.TimeScale = 0
+	face.Enabled = false
+	jumpscareFace.Enabled = true
+	jumpscareFace.TimeScale = 1
+	local amount = math.max(1, math.ceil(jumpscareFace.Rate * jumpscareFace.Lifetime.Max))
+	jumpscareFace:Emit(amount)
+	task.wait(0.1)
+	jumpscareFace.TimeScale = 0
+	local jumpscareAsset = getcustomasset("Assets/Ripper Jumpscare.mp3", true)
+	local jumpscareSound = model.Jumpscare
+	jumpscareSound.SoundId = jumpscareAsset
+	task.wait(1)
+	jumpscareSound:Play()
+	task.wait(1)
+	local staticSound = model.Static
+	staticSound.Volume = 0
+	staticSound:Play()
+	local fadeIn = TweenService:Create(staticSound, TweenInfo.new(1, Enum.EasingStyle.Linear), {Volume = 10})
+	fadeIn:Play()
+	fadeIn.Completed:Wait()
+	task.wait(1)
+	local fadeOut = TweenService:Create(staticSound, TweenInfo.new(0.5, Enum.EasingStyle.Linear), {Volume = 0})
+	fadeOut:Play()
+	DamagePlayer(entity)
+	fadeOut.Completed:Wait()
+	RestoreSounds()
+	entity:JumpscareDespawn()
+end
 	},
 	Crucifixion = {
 		Type = "Guiding", -- "Guiding"
