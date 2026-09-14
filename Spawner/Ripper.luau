@@ -91,7 +91,6 @@ local entity = Spawner:Create({
         local player = Players.LocalPlayer
         local camera = workspace.CurrentCamera
         local model = entity.Model
-        local pausedSounds = {}
 
         local cameraLockName = "RipperJumpscareCamera"
         local deathCameraName = "RipperDeathCamera"
@@ -129,28 +128,6 @@ local entity = Spawner:Create({
             return target:GetPivot().Position
         end
 
-        local function pauseSounds()
-            for _, object in ipairs(game:GetDescendants()) do
-                if object:IsA("Sound")
-                    and object.Playing
-                    and object ~= jumpscareSound
-                    and object ~= staticSound
-                    and object ~= model.Missing
-                then
-                    table.insert(pausedSounds, object)
-                    object:Pause()
-                end
-            end
-        end
-
-        local function resumeSounds()
-            for _, sound in ipairs(pausedSounds) do
-                if sound.Parent then
-                    sound:Resume()
-                end
-            end
-        end
-
         local function releaseCamera()
             if cameraReleased then
                 return
@@ -167,7 +144,7 @@ local entity = Spawner:Create({
 
                 RunService:BindToRenderStep(
                     deathCameraName,
-                    Enum.RenderPriority.Camera.Value + 100,
+                    Enum.RenderPriority.Camera.Value + 1000,
                     function()
                         if camera then
                             camera.CameraType = Enum.CameraType.Scriptable
@@ -183,8 +160,10 @@ local entity = Spawner:Create({
                 return
             end
 
-            local reached = false
+            entity:Resume()
+
             local fallTarget = model:GetPivot() - Vector3.new(0, 300, 0)
+            local reached = false
             local connection
 
             connection = RunService.Stepped:Connect(function(_, step)
@@ -194,24 +173,22 @@ local entity = Spawner:Create({
                     return
                 end
 
-                if not model:GetAttribute("Paused") then
-                    local pivot = model:GetPivot()
-                    local difference = fallTarget.Position - pivot.Position
-                    local magnitude = difference.Magnitude
+                local pivot = model:GetPivot()
+                local difference = fallTarget.Position - pivot.Position
+                local magnitude = difference.Magnitude
 
-                    if magnitude > 0.1 then
-                        local unit = difference.Unit
+                if magnitude > 0.1 then
+                    local direction = difference.Unit
 
-                        model:PivotTo(
-                            pivot + unit * math.min(
-                                step * entity.Config.Movement.Speed,
-                                magnitude
-                            )
+                    model:PivotTo(
+                        pivot + direction * math.min(
+                            step * entity.Config.Movement.Speed,
+                            magnitude
                         )
-                    else
-                        connection:Disconnect()
-                        reached = true
-                    end
+                    )
+                else
+                    connection:Disconnect()
+                    reached = true
                 end
             end)
 
@@ -232,7 +209,6 @@ local entity = Spawner:Create({
             deathHandled = true
 
             releaseCamera()
-            resumeSounds()
 
             task.spawn(fallAndDespawn)
 
@@ -244,12 +220,10 @@ local entity = Spawner:Create({
 
         model.Missing:Stop()
         entity:Pause()
-        pauseSounds()
 
         staticParticleEmitter.TimeScale = 0
 
         face.Enabled = false
-
         jumpscareFace.Enabled = true
         jumpscareFace.TimeScale = 1
 
@@ -266,7 +240,7 @@ local entity = Spawner:Create({
 
             RunService:BindToRenderStep(
                 cameraLockName,
-                Enum.RenderPriority.Camera.Value + 100,
+                Enum.RenderPriority.Camera.Value + 1000,
                 function()
                     if cameraReleased or not camera or not target.Parent then
                         return
