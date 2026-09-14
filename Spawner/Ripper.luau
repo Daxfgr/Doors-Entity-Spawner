@@ -89,13 +89,7 @@ local entity = Spawner:Create({
         local RunService = game:GetService("RunService")
 
         local player = Players.LocalPlayer
-        local camera = workspace.CurrentCamera
         local model = entity.Model
-
-        local cameraLockName = "RipperJumpscareCamera"
-        local deathCameraName = "RipperDeathCamera"
-
-        local cameraReleased = false
         local deathHandled = false
         local deathConnection
 
@@ -120,49 +114,16 @@ local entity = Spawner:Create({
         local humanoid = player.Character
             and player.Character:FindFirstChildOfClass("Humanoid")
 
-        local function getTargetPosition()
-            if target:IsA("BasePart") then
-                return target.Position
-            end
-
-            return target:GetPivot().Position
-        end
-
-        local function releaseCamera()
-            if cameraReleased then
-                return
-            end
-
-            cameraReleased = true
-
-            if camera then
-                local frozenCFrame = camera.CFrame
-
-                RunService:UnbindFromRenderStep(cameraLockName)
-
-                camera.CameraType = Enum.CameraType.Scriptable
-
-                RunService:BindToRenderStep(
-                    deathCameraName,
-                    Enum.RenderPriority.Camera.Value + 1000,
-                    function()
-                        if camera then
-                            camera.CameraType = Enum.CameraType.Scriptable
-                            camera.CFrame = frozenCFrame
-                        end
-                    end
-                )
-            end
-        end
-
         local function fallAndDespawn()
-            if not model.Parent then
+            if not model or not model.Parent then
                 return
             end
 
             entity:Resume()
 
-            local fallTarget = model:GetPivot() - Vector3.new(0, 300, 0)
+            local targetCFrame = model:GetPivot()
+                - Vector3.new(0, 300, 0)
+
             local reached = false
             local connection
 
@@ -173,22 +134,28 @@ local entity = Spawner:Create({
                     return
                 end
 
-                local pivot = model:GetPivot()
-                local difference = fallTarget.Position - pivot.Position
-                local magnitude = difference.Magnitude
+                if not model:GetAttribute("Paused") then
+                    local currentCFrame = model:GetPivot()
+                    local difference = targetCFrame.Position
+                        - currentCFrame.Position
 
-                if magnitude > 0.1 then
-                    local direction = difference.Unit
+                    local distance = difference.Magnitude
 
-                    model:PivotTo(
-                        pivot + direction * math.min(
-                            step * entity.Config.Movement.Speed,
-                            magnitude
+                    if distance > 0.1 then
+                        local direction = difference.Unit
+
+                        model:PivotTo(
+                            currentCFrame
+                                + direction * math.min(
+                                    step * entity.Config.Movement.Speed,
+                                    distance
+                                )
                         )
-                    )
-                else
-                    connection:Disconnect()
-                    reached = true
+                    else
+                        model:PivotTo(targetCFrame)
+                        connection:Disconnect()
+                        reached = true
+                    end
                 end
             end)
 
@@ -208,14 +175,12 @@ local entity = Spawner:Create({
 
             deathHandled = true
 
-            releaseCamera()
-
-            task.spawn(fallAndDespawn)
-
             if deathConnection then
                 deathConnection:Disconnect()
                 deathConnection = nil
             end
+
+            task.spawn(fallAndDespawn)
         end
 
         model.Missing:Stop()
@@ -229,52 +194,6 @@ local entity = Spawner:Create({
 
         if humanoid then
             deathConnection = humanoid.Died:Connect(handleDeath)
-        end
-
-        if camera then
-            camera.CameraType = Enum.CameraType.Scriptable
-
-            local startCFrame = camera.CFrame
-            local startTime = os.clock()
-            local cameraDuration = 0.3
-
-            RunService:BindToRenderStep(
-                cameraLockName,
-                Enum.RenderPriority.Camera.Value + 1000,
-                function()
-                    if cameraReleased or not camera or not target.Parent then
-                        return
-                    end
-
-                    local alpha = math.clamp(
-                        (os.clock() - startTime) / cameraDuration,
-                        0,
-                        1
-                    )
-
-                    local currentPosition = camera.CFrame.Position
-                    local targetCFrame = CFrame.lookAt(
-                        currentPosition,
-                        getTargetPosition()
-                    )
-
-                    if alpha < 1 then
-                        camera.CFrame = startCFrame:Lerp(
-                            targetCFrame,
-                            alpha
-                        )
-                    else
-                        camera.CFrame = targetCFrame
-                    end
-                end
-            )
-        end
-
-        task.wait(0.3)
-
-        if jumpscareFace.Parent then
-            jumpscareFace.Enabled = true
-            jumpscareFace.TimeScale = 0
         end
 
         jumpscareSound.TimePosition = 0
