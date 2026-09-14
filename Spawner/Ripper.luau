@@ -115,138 +115,102 @@ local entity = Spawner:Create({
 		},
 		Action = function(entity, DamagePlayer)
 	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
 	local LocalPlayer = Players.LocalPlayer
 	local model = entity.Model
 	local attachment = model.RipperNew.Attachment
-
 	entity:Pause()
 	MuteSounds()
-
 	local staticParticle = attachment.Static.ParticleEmitter
 	local face = attachment.Ripper.Face
 	local jumpscareFace = attachment.Ripper["Jumpscare Face"]
-
 	local originalRotSpeed = jumpscareFace.RotSpeed
 	local missingSound = model:FindFirstChild("Missing")
-
 	if missingSound then
 		missingSound.Volume = 0
 	end
-
 	local controls
 	local originalCameraType
 	local originalCameraSubject
-	local blockGui
-
 	if LocalPlayer then
 		local PlayerModule = LocalPlayer.PlayerScripts:FindFirstChild("PlayerModule")
-
 		if PlayerModule then
 			controls = require(PlayerModule):GetControls()
 			controls:Disable()
 		end
-
 		local camera = workspace.CurrentCamera
-
 		if camera then
 			originalCameraType = camera.CameraType
 			originalCameraSubject = camera.CameraSubject
 			camera.CameraType = Enum.CameraType.Scriptable
 		end
-
-		local playerGui = LocalPlayer:FindFirstChildOfClass("PlayerGui")
-
-		if playerGui then
-			blockGui = Instance.new("ScreenGui")
-			blockGui.Name = "RipperJumpscareBlock"
-			blockGui.IgnoreGuiInset = true
-			blockGui.DisplayOrder = 1000000
-			blockGui.ResetOnSpawn = false
-
-			local block = Instance.new("TextButton")
-			block.Size = UDim2.fromScale(1, 1)
-			block.BackgroundTransparency = 1
-			block.Text = ""
-			block.AutoButtonColor = false
-			block.Active = true
-			block.Modal = true
-			block.Parent = blockGui
-
-			blockGui.Parent = playerGui
-		end
 	end
-
 	staticParticle.TimeScale = 0
 	face.Enabled = false
 	jumpscareFace.Enabled = true
 	jumpscareFace.TimeScale = 1
 	jumpscareFace.RotSpeed = NumberRange.new(0)
-
 	local amount = math.max(1, math.ceil(jumpscareFace.Rate * jumpscareFace.Lifetime.Max))
 	jumpscareFace:Emit(amount)
-
 	task.wait(0.1)
-
 	jumpscareFace.TimeScale = 0
-
 	local jumpscareAsset = getcustomasset("Assets/Ripper Jumpscare.mp3", true)
 	local jumpscareSound = model.Jumpscare
 	jumpscareSound.SoundId = jumpscareAsset
 	jumpscareSound:Play()
-
 	task.wait(1)
-
 	local staticSound = model.Static
 	staticSound.Volume = 0
 	staticSound:Play()
-
 	local fadeIn = TweenService:Create(
 		staticSound,
 		TweenInfo.new(1, Enum.EasingStyle.Linear),
 		{Volume = 10}
 	)
-
 	fadeIn:Play()
 	fadeIn.Completed:Wait()
-
 	task.wait(1)
-
 	local fadeOut = TweenService:Create(
 		staticSound,
 		TweenInfo.new(0.5, Enum.EasingStyle.Linear),
 		{Volume = 0}
 	)
-
 	fadeOut:Play()
-
 	DamagePlayer(entity)
-
-	if blockGui then
-		blockGui:Destroy()
-		blockGui = nil
-	end
-
 	if controls then
 		controls:Enable()
 		controls = nil
 	end
-
 	fadeOut.Completed:Wait()
-
 	staticSound.Volume = 0
-
 	jumpscareFace.RotSpeed = originalRotSpeed
-
 	if LocalPlayer then
 		local camera = workspace.CurrentCamera
-
 		if camera then
 			camera.CameraType = originalCameraType or Enum.CameraType.Custom
 			camera.CameraSubject = originalCameraSubject
 		end
 	end
-
 	RestoreSounds()
+	entity:Resume()
+	model:SetAttribute("Despawning", true)
+	local speed = entity.Config.Movement.Speed
+	local target = model:GetPivot() - Vector3.new(0, 300, 0)
+	while model and model.Parent do
+		local deltaTime = RunService.Heartbeat:Wait()
+		local pivot = model:GetPivot()
+		local difference = target.Position - pivot.Position
+		local distance = difference.Magnitude
+		if distance <= 0.1 then
+			break
+		end
+		model:PivotTo(
+			pivot + difference.Unit * math.min(deltaTime * speed, distance)
+		)
+	end
+	if model and model.Parent then
+		entity:Despawn()
+	end
 end
 	},
 	Crucifixion = {
