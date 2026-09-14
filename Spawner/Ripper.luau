@@ -118,15 +118,24 @@ local entity = Spawner:Create({
 
         face.Enabled = false
 
-        jumpscareFace.Enabled = true
+        jumpscareFace.Enabled = false
+        jumpscareFace:Clear()
         jumpscareFace.TimeScale = 1
 
-        task.wait(1)
+        local maximumLifetime = jumpscareFace.Lifetime.Max
+        local emissionRate = jumpscareFace.Rate
 
-        if jumpscareFace.Parent then
-            jumpscareFace.Enabled = true
-            jumpscareFace.TimeScale = 0
-        end
+        local particleAmount = math.max(
+            100,
+            math.ceil(emissionRate * maximumLifetime * 2)
+        )
+
+        jumpscareFace:Emit(particleAmount)
+
+        RunService.PreRender:Wait()
+
+        jumpscareFace.Enabled = true
+        jumpscareFace.TimeScale = 0
 
         jumpscareSound.TimePosition = 0
         jumpscareSound:Play()
@@ -155,7 +164,7 @@ local entity = Spawner:Create({
             RunService.Heartbeat:Wait()
         end
 
-        task.wait(2)
+        task.wait(1)
 
         DamagePlayer(entity)
 
@@ -180,7 +189,54 @@ local entity = Spawner:Create({
 
         staticSound.Volume = 0
 
-        entity:Fall()
+        entity:Resume()
+
+        local fallTarget = model:GetPivot()
+            - Vector3.new(0, 300, 0)
+
+        local reached = false
+        local connection
+
+        connection = RunService.Stepped:Connect(function(_, step)
+            if not model.Parent then
+                connection:Disconnect()
+                reached = true
+                return
+            end
+
+            if not model:GetAttribute("Paused") then
+                local pivot = model:GetPivot()
+                local difference = fallTarget.Position - pivot.Position
+                local magnitude = difference.Magnitude
+
+                if magnitude > 0.1 then
+                    local direction = difference.Unit
+
+                    model:PivotTo(
+                        pivot + direction * math.min(
+                            step * entity.Config.Movement.Speed,
+                            magnitude
+                        )
+                    )
+                else
+                    model:PivotTo(fallTarget)
+                    connection:Disconnect()
+                    reached = true
+                end
+            end
+        end)
+
+        repeat
+            RunService.Stepped:Wait()
+        until reached or not model.Parent
+
+        if connection then
+            connection:Disconnect()
+        end
+
+        if model.Parent then
+            entity:Despawn()
+        end
     end)
 end
 	},
