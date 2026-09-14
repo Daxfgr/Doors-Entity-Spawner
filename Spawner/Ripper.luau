@@ -194,8 +194,6 @@ local entity = Spawner:Create({
 	jumpscareSound.SoundId = jumpscareAsset
 	jumpscareSound:Play()
 
-	DamagePlayer(entity)
-
 	task.wait(1)
 
 	local staticSound = model.Static
@@ -224,6 +222,10 @@ local entity = Spawner:Create({
 
 	jumpscareFace.RotSpeed = originalRotSpeed
 	RestoreSounds()
+
+	DamagePlayer(entity)
+
+	task.wait()
 
 	if entity:IsAlive() then
 		entity:JumpscareDespawn()
