@@ -82,7 +82,6 @@ local entity = Spawner:Create({
 			Amount = 125,
 			IgnoreHiding = false -- "true" -- "false"
 		},
-
 		Action = function(entity, DamagePlayer)
     task.spawn(function()
         local RunService = game:GetService("RunService")
@@ -224,7 +223,6 @@ local entity = Spawner:Create({
         end
     end)
 end
-
 	},
 	Crucifixion = {
 		Type = "Guiding", -- "Guiding"
