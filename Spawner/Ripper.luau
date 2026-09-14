@@ -121,7 +121,7 @@ local entity = Spawner:Create({
 
             entity:Resume()
 
-            local targetCFrame = model:GetPivot()
+            local fallTarget = model:GetPivot()
                 - Vector3.new(0, 300, 0)
 
             local reached = false
@@ -135,24 +135,19 @@ local entity = Spawner:Create({
                 end
 
                 if not model:GetAttribute("Paused") then
-                    local currentCFrame = model:GetPivot()
-                    local difference = targetCFrame.Position
-                        - currentCFrame.Position
+                    local pivot = model:GetPivot()
+                    local difference = fallTarget.Position - pivot.Position
+                    local direction = difference.Unit
+                    local magnitude = difference.Magnitude
 
-                    local distance = difference.Magnitude
-
-                    if distance > 0.1 then
-                        local direction = difference.Unit
-
+                    if magnitude > 0.1 then
                         model:PivotTo(
-                            currentCFrame
-                                + direction * math.min(
-                                    step * entity.Config.Movement.Speed,
-                                    distance
-                                )
+                            pivot + direction * math.min(
+                                step * entity.Config.Movement.Speed,
+                                magnitude
+                            )
                         )
                     else
-                        model:PivotTo(targetCFrame)
                         connection:Disconnect()
                         reached = true
                     end
@@ -190,7 +185,7 @@ local entity = Spawner:Create({
 
         face.Enabled = false
         jumpscareFace.Enabled = true
-        jumpscareFace.TimeScale = 1
+        jumpscareFace.TimeScale = 0
 
         if humanoid then
             deathConnection = humanoid.Died:Connect(handleDeath)
