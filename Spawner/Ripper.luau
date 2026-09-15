@@ -227,23 +227,37 @@ local entity = Spawner:Create({
 
 	RestoreSounds()
 
-	local fallSpeed = 125
-	local fallDistance = 300
+	local speed = entity.Config.Movement.Speed
+	local startPivot = model:GetPivot()
+	local targetCFrame = startPivot - Vector3.new(0, 300, 0)
+	local reached = false
 
-	while model.Parent do
-		local deltaTime = RunService.Heartbeat:Wait()
-		local pivot = model:GetPivot()
-
-		model:PivotTo(
-			pivot + Vector3.new(0, -fallSpeed * deltaTime, 0)
-		)
-
-		fallDistance -= fallSpeed * deltaTime
-
-		if fallDistance <= 0 then
-			break
+	local connection
+	connection = RunService.Stepped:Connect(function(_, step)
+		if not model.Parent then
+			connection:Disconnect()
+			reached = true
+			return
 		end
-	end
+
+		local pivot = model:GetPivot()
+		local difference = targetCFrame.Position - pivot.Position
+		local magnitude = difference.Magnitude
+
+		if magnitude > 0.1 then
+			local unit = difference.Unit
+			model:PivotTo(
+				pivot + unit * math.min(step * speed, magnitude)
+			)
+		else
+			connection:Disconnect()
+			reached = true
+		end
+	end)
+
+	repeat
+		RunService.Stepped:Wait()
+	until reached
 
 	if model.Parent then
 		entity:Despawn()
