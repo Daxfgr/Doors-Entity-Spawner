@@ -154,6 +154,7 @@ local entity = Spawner:Create({
 			originalCameraType = camera.CameraType
 			originalCameraSubject = camera.CameraSubject
 			camera.CameraType = Enum.CameraType.Scriptable
+			originalCameraSubject = camera.CameraSubject
 		end
 	end
 
@@ -200,37 +201,40 @@ local entity = Spawner:Create({
 
 	fadeOut:Play()
 
+	local deathStarted = false
+
 	task.spawn(function()
 		DamagePlayer(entity)
+		deathStarted = true
 	end)
 
+	while not deathStarted do
+		RunService.Heartbeat:Wait()
+
+		if not model.Parent then
+			return
+		end
+
+		local character = LocalPlayer and LocalPlayer.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+
+		if humanoid and humanoid.Health <= 0 then
+			deathStarted = true
+		end
+	end
+
 	model:SetAttribute("Despawning", true)
+
+	local fallSpeed = entity.Config.Movement.Speed
+	local targetCFrame = model:GetPivot() - Vector3.new(0, 300, 0)
+	local reached = false
 
 	if controls then
 		controls:Enable()
 		controls = nil
 	end
 
-	fadeOut.Completed:Wait()
-
-	staticSound.Volume = 0
-	jumpscareFace.RotSpeed = originalRotSpeed
-
-	if LocalPlayer then
-		local camera = workspace.CurrentCamera
-
-		if camera then
-			camera.CameraType = originalCameraType or Enum.CameraType.Custom
-			camera.CameraSubject = originalCameraSubject
-		end
-	end
-
-	RestoreSounds()
-
-	local speed = entity.Config.Movement.Speed
-	local startPivot = model:GetPivot()
-	local targetCFrame = startPivot - Vector3.new(0, 300, 0)
-	local reached = false
+	fadeOut:Play()
 
 	local connection
 	connection = RunService.Stepped:Connect(function(_, step)
@@ -246,8 +250,9 @@ local entity = Spawner:Create({
 
 		if magnitude > 0.1 then
 			local unit = difference.Unit
+
 			model:PivotTo(
-				pivot + unit * math.min(step * speed, magnitude)
+				pivot + unit * math.min(step * fallSpeed, magnitude)
 			)
 		else
 			connection:Disconnect()
@@ -262,6 +267,24 @@ local entity = Spawner:Create({
 	if model.Parent then
 		entity:Despawn()
 	end
+
+	while model.Parent do
+		RunService.Heartbeat:Wait()
+	end
+
+	staticSound.Volume = 0
+	jumpscareFace.RotSpeed = originalRotSpeed
+
+	if LocalPlayer then
+		local camera = workspace.CurrentCamera
+
+		if camera then
+			camera.CameraType = originalCameraType or Enum.CameraType.Custom
+			camera.CameraSubject = originalCameraSubject
+		end
+	end
+
+	RestoreSounds()
 end
 	},
 	Crucifixion = {
