@@ -419,16 +419,12 @@ entity:SetCallback("OnDamagePlayer", function(newHealth: number)
 	end
 end)
 
---[[
-
-DEVELOPER NOTE:
-By overwriting 'CrucifixionOverwrite' the default crucifixion callback will be replaced with your custom callback.
-
 entity:SetCallback("CrucifixionOverwrite", function()
 	print("Custom crucifixion callback")
+    face.Enabled = false
+    jumpscareFace.Enabled = true
+    entity.model.RippeeNew.Repent:Play()
 end)
-
-]]--
 
 ---====== Run entity ======---
 
