@@ -126,6 +126,7 @@ local entity = Spawner:Create({
 	MuteSounds()
 
 	local staticParticle = attachment.Static.ParticleEmitter
+    staticParticle.LockedToPart = true
 	local face = attachment.Ripper.Face
 	local jumpscareFace = attachment.Ripper["Jumpscare Face"]
 
