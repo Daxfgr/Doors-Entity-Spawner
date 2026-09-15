@@ -1,4 +1,4 @@
----====== Load spawner ======---
+---====== Load spawner ======
 
 local source = game:HttpGet(
     "https://raw.githubusercontent.com/Daxfgr/Doors-Entity-Spawner/refs/heads/main/Spawner/init.luau"
@@ -30,6 +30,12 @@ source = replaceOnce(
     [[task.delay(1, function()
                 task.spawn(Earthquake)
             end)]]
+)
+
+source = replaceOnce(
+    source,
+    'entity:RunCallback("CrucifixionOverwrite")',
+    'entity:RunCallback("CrucifixionOverwrite")\nCrucifixEntity(entity)'
 )
 
 local Spawner = loadstring(source)()
