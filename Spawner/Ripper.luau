@@ -200,7 +200,11 @@ local entity = Spawner:Create({
 
 	fadeOut:Play()
 
-	DamagePlayer(entity)
+	task.spawn(function()
+		DamagePlayer(entity)
+	end)
+
+	model:SetAttribute("Despawning", true)
 
 	if controls then
 		controls:Enable()
@@ -221,13 +225,10 @@ local entity = Spawner:Create({
 		end
 	end
 
-		RestoreSounds()
+	RestoreSounds()
 
-	local fallSpeed = entity.Config.Movement.Speed
-	entity.Config.Movement.Speed = 0
-
-	model:SetAttribute("Despawning", true)
-	entity:Resume()
+	local fallSpeed = 125
+	local fallDistance = 300
 
 	while model.Parent do
 		local deltaTime = RunService.Heartbeat:Wait()
@@ -237,7 +238,9 @@ local entity = Spawner:Create({
 			pivot + Vector3.new(0, -fallSpeed * deltaTime, 0)
 		)
 
-		if model:GetPivot().Position.Y <= -100 then
+		fallDistance -= fallSpeed * deltaTime
+
+		if fallDistance <= 0 then
 			break
 		end
 	end
