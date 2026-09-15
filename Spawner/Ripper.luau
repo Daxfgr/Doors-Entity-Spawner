@@ -117,6 +117,7 @@ local entity = Spawner:Create({
 		},
 		Action = function(entity, DamagePlayer)
 	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
 	local LocalPlayer = Players.LocalPlayer
 	local model = entity.Model
 	local attachment = model.RipperNew.Attachment
@@ -201,6 +202,8 @@ local entity = Spawner:Create({
 
 	DamagePlayer(entity)
 
+	task.wait(0.5)
+
 	if controls then
 		controls:Enable()
 		controls = nil
@@ -221,6 +224,31 @@ local entity = Spawner:Create({
 	end
 
 	RestoreSounds()
+
+	model:SetAttribute("Despawning", true)
+	entity:Resume()
+
+	local speed = entity.Config.Movement.Speed
+	local target = model:GetPivot().Position - Vector3.new(0, 300, 0)
+
+	while model.Parent do
+		local deltaTime = RunService.Heartbeat:Wait()
+		local pivot = model:GetPivot()
+		local difference = target - pivot.Position
+		local distance = difference.Magnitude
+
+		if distance <= 0.1 then
+			break
+		end
+
+		model:PivotTo(
+			pivot + difference.Unit * math.min(deltaTime * speed, distance)
+		)
+	end
+
+	if model.Parent then
+		entity:Despawn()
+	end
 end
 	},
 	Crucifixion = {
