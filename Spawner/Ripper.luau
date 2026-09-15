@@ -221,12 +221,13 @@ local entity = Spawner:Create({
 		end
 	end
 
-	RestoreSounds()
+		RestoreSounds()
+
+	local fallSpeed = entity.Config.Movement.Speed
+	entity.Config.Movement.Speed = 0
 
 	model:SetAttribute("Despawning", true)
 	entity:Resume()
-
-	local fallSpeed = entity.Config.Movement.Speed
 
 	while model.Parent do
 		local deltaTime = RunService.Heartbeat:Wait()
