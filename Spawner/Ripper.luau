@@ -196,7 +196,7 @@ local entity = Spawner:Create({
 
 	local fadeOut = TweenService:Create(
 		staticSound,
-		TweenInfo.new(0.5, Enum.EasingStyle.Linear),
+		TweenInfo.new(1, Enum.EasingStyle.Linear),
 		{Volume = 0}
 	)
 
