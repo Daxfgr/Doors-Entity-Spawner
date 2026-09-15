@@ -421,9 +421,21 @@ end)
 
 entity:SetCallback("CrucifixionOverwrite", function()
 	print("Custom crucifixion callback")
-    face.Enabled = false
-    jumpscareFace.Enabled = true
-    entity.model.RippeeNew.Repent:Play()
+
+	local model = entity.Model
+	local attachment = model.RipperNew.Attachment
+
+	local face = attachment.Ripper.Face
+	local jumpscareFace = attachment.Ripper["Jumpscare Face"]
+
+	face.Enabled = false
+	jumpscareFace.Enabled = true
+
+	local repent = model.RipperNew:FindFirstChild("Repent")
+
+	if repent then
+		repent:Play()
+	end
 end)
 
 ---====== Run entity ======---
