@@ -190,6 +190,72 @@ local entity = Spawner:Create({
 	)
 
 	fadeIn:Play()
+
+	--====== RipperStatic ======--
+
+	task.spawn(function()
+		local gui = Instance.new("ScreenGui")
+		gui.Name = "RipperStatic"
+		gui.IgnoreGuiInset = true
+		gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+		local image = Instance.new("ImageLabel")
+		image.Name = "Static"
+		image.Size = UDim2.fromScale(1, 1)
+		image.Position = UDim2.fromScale(0, 0)
+		image.BackgroundTransparency = 1
+		image.ImageTransparency = 1
+		image.BorderSizePixel = 0
+		image.ScaleType = Enum.ScaleType.Stretch
+		image.Parent = gui
+
+		local images = {
+			"rbxassetid://8482795900",
+			"rbxassetid://236542974",
+			"rbxassetid://184251462",
+			"rbxassetid://236777652"
+		}
+
+		local running = true
+
+		task.spawn(function()
+			while running do
+				for _, id in ipairs(images) do
+					if not running then
+						break
+					end
+
+					image.Image = id
+					task.wait(0.03)
+				end
+			end
+		end)
+
+		local imageFadeIn = TweenService:Create(
+			image,
+			TweenInfo.new(1, Enum.EasingStyle.Linear),
+			{ImageTransparency = 0}
+		)
+
+		imageFadeIn:Play()
+		imageFadeIn.Completed:Wait()
+
+		task.wait(1)
+
+		running = false
+
+		local imageFadeOut = TweenService:Create(
+			image,
+			TweenInfo.new(1, Enum.EasingStyle.Linear),
+			{ImageTransparency = 1}
+		)
+
+		imageFadeOut:Play()
+		imageFadeOut.Completed:Wait()
+
+		gui:Destroy()
+	end)
+
 	fadeIn.Completed:Wait()
 
 	task.wait(1)
