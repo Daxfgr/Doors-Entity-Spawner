@@ -34,45 +34,7 @@ source = replaceOnce(
 
 local Spawner = loadstring(source)()
 
-local oldCreate = Spawner.Create
-
-Spawner.Create = function(self, config)
-	local entity = oldCreate(self, config)
-
-	local oldDespawn = entity.Despawn
-
-	entity.Despawn = function(self)
-		if self:IsAlive() then
-			local model = self.Model
-			local speed = self.Config.Movement.Speed
-			local target = model:GetPivot() - Vector3.new(0, 300, 0)
-
-			model:SetAttribute("Despawning", true)
-			model:SetAttribute("Paused", false)
-
-			task.spawn(self.RunCallback, self, "OnDespawning")
-
-			while model and model.Parent do
-				local deltaTime = game:GetService("RunService").Heartbeat:Wait()
-				local pivot = model:GetPivot()
-				local difference = target.Position - pivot.Position
-				local distance = difference.Magnitude
-
-				if distance <= 0.1 then
-					break
-				end
-
-				model:PivotTo(
-					pivot + difference.Unit * math.min(deltaTime * speed, distance)
-				)
-			end
-
-			oldDespawn(self)
-		end
-	end
-
-	return entity
-end
+---====== Sounds ======---
 
 local TweenService = game:GetService("TweenService")
 local originalVolumes = {}
@@ -259,9 +221,6 @@ local entity = Spawner:Create({
 	end
 
 	RestoreSounds()
-
-	entity:Resume()
-	entity:Despawn()
 end
 	},
 	Crucifixion = {
