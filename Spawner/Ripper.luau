@@ -419,7 +419,7 @@ entity:SetCallback("OnDamagePlayer", function(newHealth: number)
 	end
 end)
 
-entity:SetCallback("CrucifixionOverwrite", function()
+entity.Debug.CrucifixionOverwrite = function()
 	print("Custom crucifixion callback")
 
 	local model = entity.Model
@@ -436,7 +436,7 @@ entity:SetCallback("CrucifixionOverwrite", function()
 	if repent then
 		repent:Play()
 	end
-end)
+end
 
 ---====== Run entity ======---
 
