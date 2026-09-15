@@ -202,8 +202,6 @@ local entity = Spawner:Create({
 
 	DamagePlayer(entity)
 
-	task.wait(0.5)
-
 	if controls then
 		controls:Enable()
 		controls = nil
@@ -228,22 +226,19 @@ local entity = Spawner:Create({
 	model:SetAttribute("Despawning", true)
 	entity:Resume()
 
-	local speed = entity.Config.Movement.Speed
-	local target = model:GetPivot().Position - Vector3.new(0, 300, 0)
+	local fallSpeed = entity.Config.Movement.Speed
 
 	while model.Parent do
 		local deltaTime = RunService.Heartbeat:Wait()
 		local pivot = model:GetPivot()
-		local difference = target - pivot.Position
-		local distance = difference.Magnitude
-
-		if distance <= 0.1 then
-			break
-		end
 
 		model:PivotTo(
-			pivot + difference.Unit * math.min(deltaTime * speed, distance)
+			pivot + Vector3.new(0, -fallSpeed * deltaTime, 0)
 		)
+
+		if model:GetPivot().Position.Y <= -100 then
+			break
+		end
 	end
 
 	if model.Parent then
