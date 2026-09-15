@@ -201,79 +201,73 @@ local entity = Spawner:Create({
 
 	fadeOut:Play()
 
-	local deathStarted = false
+	local falling = false
 
 	task.spawn(function()
 		DamagePlayer(entity)
-		deathStarted = true
 	end)
 
-	while not deathStarted do
-		RunService.Heartbeat:Wait()
+	task.spawn(function()
+		while model.Parent and not falling do
+			local character = LocalPlayer and LocalPlayer.Character
+			local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 
-		if not model.Parent then
-			return
+			if humanoid and humanoid.Health <= 0 then
+				falling = true
+				model:SetAttribute("Despawning", true)
+
+				local speed = entity.Config.Movement.Speed
+				local targetCFrame = model:GetPivot() - Vector3.new(0, 300, 0)
+				local reached = false
+
+				local connection
+				connection = RunService.Stepped:Connect(function(_, step)
+					if not model.Parent then
+						connection:Disconnect()
+						reached = true
+						return
+					end
+
+					local pivot = model:GetPivot()
+					local difference = targetCFrame.Position - pivot.Position
+					local magnitude = difference.Magnitude
+
+					if magnitude > 0.1 then
+						local unit = difference.Unit
+
+						model:PivotTo(
+							pivot + unit * math.min(step * speed, magnitude)
+						)
+					else
+						connection:Disconnect()
+						reached = true
+					end
+				end)
+
+				repeat
+					RunService.Stepped:Wait()
+				until reached
+
+				if model.Parent then
+					entity:Despawn()
+				end
+
+				break
+			end
+
+			RunService.Heartbeat:Wait()
 		end
+	end)
 
-		local character = LocalPlayer and LocalPlayer.Character
-		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	fadeOut.Completed:Wait()
 
-		if humanoid and humanoid.Health <= 0 then
-			deathStarted = true
-		end
-	end
-
-	model:SetAttribute("Despawning", true)
-
-	local fallSpeed = entity.Config.Movement.Speed
-	local targetCFrame = model:GetPivot() - Vector3.new(0, 300, 0)
-	local reached = false
+	staticSound.Volume = 0
+	jumpscareFace.RotSpeed = originalRotSpeed
 
 	if controls then
 		controls:Enable()
 		controls = nil
 	end
-
-	fadeOut:Play()
-
-	local connection
-	connection = RunService.Stepped:Connect(function(_, step)
-		if not model.Parent then
-			connection:Disconnect()
-			reached = true
-			return
-		end
-
-		local pivot = model:GetPivot()
-		local difference = targetCFrame.Position - pivot.Position
-		local magnitude = difference.Magnitude
-
-		if magnitude > 0.1 then
-			local unit = difference.Unit
-
-			model:PivotTo(
-				pivot + unit * math.min(step * fallSpeed, magnitude)
-			)
-		else
-			connection:Disconnect()
-			reached = true
-		end
-	end)
-
-	repeat
-		RunService.Stepped:Wait()
-	until reached
-
-	if model.Parent then
-		entity:Despawn()
-	end
-
-	while model.Parent do
-		RunService.Heartbeat:Wait()
-	end
-
-	staticSound.Volume = 0
-	jumpscareFace.RotSpeed = originalRotSpeed
 
 	if LocalPlayer then
 		local camera = workspace.CurrentCamera
@@ -282,6 +276,10 @@ local entity = Spawner:Create({
 			camera.CameraType = originalCameraType or Enum.CameraType.Custom
 			camera.CameraSubject = originalCameraSubject
 		end
+	end
+
+	while model.Parent do
+		RunService.Heartbeat:Wait()
 	end
 
 	RestoreSounds()
