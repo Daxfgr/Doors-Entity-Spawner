@@ -97,12 +97,12 @@ local entity = Spawner:Create({
 		Enabled = true -- "true" -- "false"
 	},
 	CameraShake = {
-		Enabled =true, -- "true" -- "false"
-		Range = 54,
-		Values = {1.5, 20, 0.1, 1} -- Magnitude, Roughness, FadeIn, FadeOut
+		Enabled = true, -- "true" -- "false"
+		Range = 100,
+		Values = {3.5, 20, 0.1, 1} -- Magnitude, Roughness, FadeIn, FadeOut
 	},
 	Movement = {
-		Speed = 125,
+		Speed = 100,
 		Delay = 4,
 		Reversed = false -- "true" -- "false"
 	},
@@ -117,7 +117,7 @@ local entity = Spawner:Create({
 		Enabled = true,
 
 		Damage = {
-			Range = 54,
+			Range = 50,
 			Amount = 125,
 			IgnoreHiding = false -- "true" -- "false"
 		},
